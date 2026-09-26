@@ -129,8 +129,9 @@ Open the dashboard at [`dashboard/index.html`](dashboard/index.html), or a singl
 python3 -m venv .venv && .venv/bin/pip install -e .      # Python 3.11+
 .venv/bin/python -m pytest -q                      # verifier unit tests + demo-app tests
 
-# Verifier self-test: expect 1 PROVEN, 3 REJECTED
-.venv/bin/python -m crucible.cli verify --pr pr-1-refunds --base main --run-dir runs/verifier-selftest
+# Verifier self-test: expect 1 PROVEN, 3 REJECTED.
+# The pr-* branches now contain Crucible's fixes; the *-original tags are the PRs as submitted.
+.venv/bin/python -m crucible.cli verify --pr pr-1-refunds-original --base main --run-dir runs/verifier-selftest
 
 # Pipeline for one PR (attack output in runs/<pr>/findings/ and runs/<pr>/tests/)
 .venv/bin/python -m crucible.cli merge  --run-dir runs/pr-2-discounts
