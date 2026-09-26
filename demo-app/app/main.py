@@ -135,8 +135,11 @@ def apply_discount(
             detail="Discount percent must be between 1 and 50 inclusive",
         )
 
-    discount_amount = (order.total_paise * body.percent) // 100
-    new_total = max(0, order.total_paise - discount_amount)
+    original_total = sum(
+        store.products[item.product_id].price_paise * item.qty for item in order.items
+    )
+    discount_amount = (original_total * body.percent) // 100
+    new_total = max(0, original_total - discount_amount)
 
     updated = order.model_copy(update={
         "total_paise": new_total,
