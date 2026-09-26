@@ -129,6 +129,12 @@ def apply_discount(
     user_id = _require_user(x_user_id)
     order = _require_own_order(order_id, user_id)
 
+    if order.status != OrderStatus.placed:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot discount an order with status {order.status!r}",
+        )
+
     if body.percent < 1 or body.percent > 50:
         raise HTTPException(
             status_code=400,
