@@ -1,5 +1,15 @@
 [
   {
+    "behaviour": "Only the user who created an order may act on it; other users must receive 403.",
+    "rule_id": "R7",
+    "endpoints": ["POST /orders/{order_id}/refund"]
+  },
+  {
+    "behaviour": "Accessing another user's order returns 403.",
+    "rule_id": "R8",
+    "endpoints": ["POST /orders/{order_id}/refund"]
+  },
+  {
     "behaviour": "Refunds are only allowed for orders with status 'delivered'; any other status must return 400.",
     "rule_id": "R15",
     "endpoints": ["POST /orders/{order_id}/refund"]

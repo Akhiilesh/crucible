@@ -2,40 +2,60 @@
 
 ## Input
 
-`runs/<pr>/verdicts.json` — read only the entries where `"verdict": "PROVEN"`.
+`runs/<pr>/verdicts.json` — read only entries where `"verdict": "PROVEN"`.
+`<repo_root>` is the directory that contains `.git/`.
 
-## Step 1 — Commit proof tests (once, before any fix)
+## Step 1 — Set up a fix worktree
 
-1. Check out branch `<pr>`.
-2. For each PROVEN finding, copy `test_path` (relative to repo root) into
-   `demo-app/tests/crucible/`. Create `demo-app/tests/crucible/__init__.py` if it does not exist.
-3. Commit: `"test(<pr>): add crucible proof tests"`.
-4. These files are now read-only. Never edit them again.
+```
+git worktree add runs/<pr>/worktrees/fix <pr>
+```
 
-## Step 2 — Fix each PROVEN finding
+All edits, test runs, and commits happen inside this worktree. Never check out `<pr>` in the
+main working tree.
 
-For each PROVEN finding in order:
+## Step 2 — Fix each PROVEN finding (max 3 attempts per finding)
 
-1. Read the proof test to understand what behaviour it asserts.
-2. Make the minimal change to `demo-app/app/` only that makes the test pass.
-   Do not edit spec files, ticket files, or any test file.
-3. Run `.venv/bin/python -m pytest demo-app/tests -q`.
-4. If green: commit `"fix(<id>): <claim>"` and record the short commit SHA as `fix_commit`
-   in `runs/<pr>/verdicts.json` for this finding.
-5. If not green after this attempt:
-   - Revert the change (`git checkout -- demo-app/app/`).
-   - Try a different approach (up to 3 attempts total per finding).
-   - After 3 failed attempts: leave the verdict as `"UNFIXED"`, set `fix_commit` to null,
-     and move on to the next finding.
+Work through the PROVEN findings one at a time.
 
-## Step 3 — Return to main
+**Per attempt:**
 
-After all findings are processed, run `git checkout main`. Update `runs/<pr>/verdicts.json`
-with the final `fix_commit` values.
+1. Copy the finding's `test_path` (relative to repo root) into
+   `<worktree>/demo-app/tests/crucible/`. Create `__init__.py` in that directory if absent.
+2. Make the minimal change to `<worktree>/demo-app/app/` only.
+3. Run from the worktree root:
+   ```
+   <repo_root>/.venv/bin/python -m pytest demo-app/tests -q
+   ```
+4. **If green**: commit the proof test and the fix together:
+   ```
+   git -C <worktree> add demo-app/
+   git -C <worktree> commit -m "fix(<id>): <claim>"
+   ```
+   Record the short SHA (`git -C <worktree> rev-parse --short HEAD`) as `fix_commit`.
+   Move on to the next finding.
+
+5. **If still red after 3 attempts**:
+   - Discard all uncommitted changes in the worktree:
+     ```
+     git -C <worktree> checkout -- .
+     git -C <worktree> clean -fd demo-app/
+     ```
+   - Set `verdict` to `"UNFIXED"`, `fix_commit` to `null`. Do not commit the proof test.
+   - Move on to the next finding.
+
+## Step 3 — Finish
+
+1. Update `runs/<pr>/verdicts.json` in the **main working tree** with the final `fix_commit`
+   values and any `UNFIXED` verdicts.
+2. Remove the worktree:
+   ```
+   git worktree remove runs/<pr>/worktrees/fix
+   ```
 
 ## Invariants
 
-- Never edit proof tests (anything in `demo-app/tests/crucible/` or `runs/<pr>/tests/`).
-- Never edit `demo-app/spec/` or `demo-app/spec/tickets/`.
-- Each fix commit touches `demo-app/app/` only.
-- If the full test suite was green before you started, it must remain green after each fix.
+- Every commit on `<pr>` must leave the full test suite green.
+- Never edit proof tests (anything under `demo-app/tests/crucible/` or `runs/<pr>/tests/`).
+- Never edit `demo-app/spec/`, `demo-app/spec/tickets/`, or any playbook file.
+- Each fix commit touches `demo-app/app/` and `demo-app/tests/crucible/` only.

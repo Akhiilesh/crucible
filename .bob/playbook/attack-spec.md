@@ -19,12 +19,6 @@ it is a pure read-only query with no observable side effect), note it and move t
 - Cite the exact `rule_id` from intent.json as the `basis` (format: `spec/orders.md#R<n>`).
 - The `claim` should echo the `behaviour` from intent.json, phrased as what the spec requires.
 
-## Focus
-
-For `pr-1-refunds`: cover every rule in intent.json. R16 (window from delivered_at) is likely
-to be interesting — design a test that distinguishes created_at from delivered_at by using
-different timestamps for each.
-
 ## Output
 
 `runs/<pr>/findings/spec.json` and test files `runs/<pr>/tests/test_spec_<n>.py`.
