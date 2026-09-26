@@ -1,7 +1,7 @@
-"""FastAPI orders service — base implementation (no feature branches yet)."""
+"""FastAPI orders service — with refund endpoint (pr-1-refunds)."""
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from fastapi import FastAPI, Header, HTTPException
 
@@ -11,6 +11,7 @@ from app.models import (
     Order,
     OrderResponse,
     OrderStatus,
+    RefundRequest,
 )
 
 app = FastAPI(title="Orders Service")
@@ -113,6 +114,37 @@ def deliver_order(
     updated = order.model_copy(update={
         "status": OrderStatus.delivered,
         "delivered_at": datetime.now(tz=timezone.utc),
+    })
+    store.orders[order_id] = updated
+    return _order_to_response(updated)
+
+
+@app.post("/orders/{order_id}/refund", response_model=OrderResponse)
+def refund_order(
+    order_id: str,
+    body: RefundRequest,
+    x_user_id: str = Header(...),
+) -> OrderResponse:
+    """Refund a delivered order within the 14-day window."""
+    user_id = _require_user(x_user_id)
+    order = _require_own_order(order_id, user_id)
+
+    if order.status != OrderStatus.delivered:
+        raise HTTPException(status_code=400, detail="Only delivered orders can be refunded")
+
+    window_start = order.created_at
+    if datetime.now(tz=timezone.utc) - window_start > timedelta(days=14):
+        raise HTTPException(status_code=400, detail="Refund window has expired")
+
+    if body.amount_paise <= 0 or body.amount_paise > order.total_paise:
+        raise HTTPException(
+            status_code=400,
+            detail="Refund amount must be greater than 0 and at most the order total",
+        )
+
+    updated = order.model_copy(update={
+        "status": OrderStatus.refunded,
+        "refunded_paise": body.amount_paise,
     })
     store.orders[order_id] = updated
     return _order_to_response(updated)

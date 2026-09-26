@@ -40,12 +40,17 @@ class Order(BaseModel):
     status: OrderStatus
     created_at: datetime
     delivered_at: Optional[datetime] = None
+    refunded_paise: Optional[int] = None
 
 
 # ── Request / response shapes ──────────────────────────────────────────────
 
 class CreateOrderRequest(BaseModel):
     items: list[OrderItem]
+
+
+class RefundRequest(BaseModel):
+    amount_paise: int
 
 
 class OrderResponse(BaseModel):
@@ -56,3 +61,4 @@ class OrderResponse(BaseModel):
     status: OrderStatus
     created_at: datetime
     delivered_at: Optional[datetime] = None
+    refunded_paise: Optional[int] = None
