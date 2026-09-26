@@ -7,6 +7,8 @@
 
 ## Step 1 — Set up a fix worktree
 
+Record the start time: `date -u +%Y-%m-%dT%H:%M:%SZ`.
+
 ```
 git worktree add runs/<pr>/worktrees/fix <pr>
 ```
@@ -16,7 +18,12 @@ main working tree.
 
 ## Step 2 — Fix each PROVEN finding (max 3 attempts per finding)
 
-Work through the PROVEN findings one at a time.
+Work through the PROVEN findings one at a time, in id order.
+
+**Already fixed?** First copy the finding's proof test into `<worktree>/demo-app/tests/crucible/`
+and run the suite. If the proof test already passes (an earlier fix in this run covered the same
+root cause), commit only the proof test as `test(<id>): proof test, fixed by <earlier sha>`, set
+`fix_commit` to that earlier SHA, and move on. Do not change app code for it.
 
 **Per attempt:**
 
@@ -51,6 +58,14 @@ Work through the PROVEN findings one at a time.
 2. Remove the worktree:
    ```
    git worktree remove runs/<pr>/worktrees/fix
+   ```
+3. Record the end time and add `"fix": {"start", "end", "seconds", "by": "<agent name>"}` to
+   `runs/<pr>/timing.json`.
+4. Confirm the fixes with the verifier (every fixed proof test must pass 3/3 on `<pr>`), then build
+   the report:
+   ```
+   .venv/bin/python -m crucible.cli verify --pr <pr> --run-dir runs/<pr> --after-fix
+   .venv/bin/python -m crucible.cli report --run-dir runs/<pr>
    ```
 
 ## Invariants

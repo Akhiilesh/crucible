@@ -12,6 +12,7 @@ import pytest
 
 from crucible.gates import (
     UNIVERSAL_PROPERTIES,
+    after_fix_status,
     extract_added_functions,
     extract_added_routes,
     gate_g1_fails_on_pr,
@@ -462,3 +463,37 @@ class TestVerdictOrdering:
         g3_pass, _ = gate_g3_reproducible(["failure", "failure", "failure"])
         g2_pass, _ = gate_g2_blame("passed", DIFF_APP_REFUND, TEST_SOURCE_REFUND)
         assert all([g4_pass, g1_pass, g3_pass, g2_pass])
+
+
+# ── G4 intent cross-check ─────────────────────────────────────────────────────
+
+class TestGateG4Intent:
+    SPEC = "R7: owner only.\nR16: window from delivered_at.\n"
+
+    def test_rule_in_spec_and_intent_passes(self):
+        assert gate_g4_grounded("spec/orders.md#R16", self.SPEC, {"R16"}) == (True, "")
+
+    def test_rule_in_spec_but_not_intent_is_ungrounded(self):
+        assert gate_g4_grounded("spec/orders.md#R7", self.SPEC, {"R16"}) == (False, "ungrounded")
+
+    def test_no_intent_falls_back_to_spec_only(self):
+        assert gate_g4_grounded("spec/orders.md#R7", self.SPEC, None) == (True, "")
+
+    def test_universal_property_ignores_intent(self):
+        assert gate_g4_grounded("no_5xx", self.SPEC, set()) == (True, "")
+
+
+# ── After-fix status ──────────────────────────────────────────────────────────
+
+class TestAfterFixStatus:
+    def test_all_passed_is_fixed(self):
+        assert after_fix_status(["passed"] * 3) == (True, "3/3")
+
+    def test_one_failure_is_not_fixed(self):
+        assert after_fix_status(["passed", "failure", "passed"]) == (False, "2/3")
+
+    def test_error_is_not_fixed(self):
+        assert after_fix_status(["error"] * 3) == (False, "0/3")
+
+    def test_empty_is_not_fixed(self):
+        assert after_fix_status([]) == (False, "0/0")

@@ -77,12 +77,17 @@ def parse_junit(junit_xml: str) -> str:
 
 # ── Gate G4 — Grounded ────────────────────────────────────────────────────────
 
-def gate_g4_grounded(basis: str, spec_text: str) -> tuple[bool, str]:
+def gate_g4_grounded(
+    basis: str,
+    spec_text: str,
+    intent_rule_ids: set[str] | None = None,
+) -> tuple[bool, str]:
     """Static grounding check. Runs before any pytest subprocess.
 
     Accepts:
       - A value in UNIVERSAL_PROPERTIES
-      - "spec/orders.md#R<n>" where "R<n>:" appears in spec_text
+      - "spec/orders.md#R<n>" where "R<n>:" appears in spec_text and, when
+        intent_rule_ids is given (the run has an intent.json), R<n> is listed there
 
     Returns (True, "") or (False, "ungrounded").
     """
@@ -92,7 +97,9 @@ def gate_g4_grounded(basis: str, spec_text: str) -> tuple[bool, str]:
     m = re.fullmatch(r"spec/orders\.md#(R\d+)", basis)
     if m:
         rule_id = m.group(1)
-        if re.search(rf"^{re.escape(rule_id)}:", spec_text, re.MULTILINE):
+        in_spec = re.search(rf"^{re.escape(rule_id)}:", spec_text, re.MULTILINE)
+        in_intent = intent_rule_ids is None or rule_id in intent_rule_ids
+        if in_spec and in_intent:
             return True, ""
 
     return False, "ungrounded"
@@ -126,6 +133,18 @@ def gate_g3_reproducible(outcomes: list[str]) -> tuple[bool, str]:
     if k == 3:
         return True, repro
     return False, repro
+
+
+# ── After-fix check ───────────────────────────────────────────────────────────
+
+def after_fix_status(outcomes: list[str]) -> tuple[bool, str]:
+    """A fixed proof test must pass on every fresh run.
+
+    outcomes is a list of parse_junit results from runs on the fixed PR branch.
+    Returns (all_passed, "k/n") where k counts "passed".
+    """
+    k = sum(1 for o in outcomes if o == "passed")
+    return k == len(outcomes) and k > 0, f"{k}/{len(outcomes)}"
 
 
 # ── Diff analysis helpers (used by G2) ───────────────────────────────────────

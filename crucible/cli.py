@@ -21,8 +21,16 @@ def verify(
     base: str = typer.Option("main", help="Base branch to compare against"),
     run_dir: str = typer.Option(..., help="Directory containing findings.json and test files"),
     keep: bool = typer.Option(False, help="Keep git worktrees after verification"),
+    after_fix: bool = typer.Option(
+        False, "--after-fix",
+        help="Re-run PROVEN proof tests on the fixed PR branch; they must now pass",
+    ),
 ) -> None:
     """Run proof gates on all findings in a run directory."""
+    if after_fix:
+        from crucible.verify import run_after_fix_check
+        run_after_fix_check(pr, Path(run_dir), _REPO_ROOT, keep)
+        return
     from crucible.verify import run_verification
     run_verification(pr, base, Path(run_dir), _REPO_ROOT, keep)
 

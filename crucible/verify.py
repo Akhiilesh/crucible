@@ -10,9 +10,11 @@ import json
 import shutil
 import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 from crucible.gates import (
+    after_fix_status,
     gate_g1_fails_on_pr,
     gate_g2_blame,
     gate_g3_reproducible,
@@ -68,13 +70,17 @@ def setup_worktrees(
         if wt.exists():
             shutil.rmtree(wt)
 
-    pr_sha = resolve_sha(pr_branch, repo_root)
-    base_sha = resolve_sha(base_branch, repo_root)
-
-    _git("worktree", "add", "--detach", str(pr_worktree), pr_sha, cwd=repo_root)
-    _git("worktree", "add", "--detach", str(base_worktree), base_sha, cwd=repo_root)
+    _add_worktree(pr_worktree, pr_branch, repo_root)
+    _add_worktree(base_worktree, base_branch, repo_root)
 
     return pr_worktree, base_worktree
+
+
+def _add_worktree(path: Path, branch: str, repo_root: Path) -> None:
+    """Add a detached worktree at the branch's current SHA (works even if checked out)."""
+    if path.exists():
+        shutil.rmtree(path)
+    _git("worktree", "add", "--detach", str(path), resolve_sha(branch, repo_root), cwd=repo_root)
 
 
 def teardown_worktrees(run_dir: Path, repo_root: Path) -> None:
@@ -180,6 +186,7 @@ def verify_finding(
     spec_text: str,
     run_dir: Path,
     repo_root: Path,
+    intent_rule_ids: set[str] | None = None,
 ) -> dict:
     """Apply G4 → G1 → G3 → G2 gates to a single finding.
 
@@ -209,7 +216,7 @@ def verify_finding(
     }
 
     # ── G4 Grounded (static, always first) ──────────────────────────────────
-    g4_pass, g4_detail = gate_g4_grounded(basis, spec_text)
+    g4_pass, g4_detail = gate_g4_grounded(basis, spec_text, intent_rule_ids)
     gate_results["grounded"] = g4_pass
     if not g4_pass:
         return {**finding, "gate_results": gate_results,
@@ -293,6 +300,14 @@ def run_verification(
 
     findings: list[dict] = json.loads(findings_path.read_text())
 
+    # G4 also requires cited rules to be listed in the run's intent.json, when there is one
+    intent_path = run_dir / "intent.json"
+    intent_rule_ids = (
+        {e["rule_id"] for e in json.loads(intent_path.read_text())}
+        if intent_path.exists() else None
+    )
+
+    started = _now()
     pr_worktree: Path | None = None
     base_worktree: Path | None = None
 
@@ -316,7 +331,7 @@ def run_verification(
             print(f"  verifying {finding['id']} ({finding.get('lens', '?')}) …")
             verdict = verify_finding(
                 finding, pr_worktree, base_worktree,
-                diff_text, spec_text, run_dir, repo_root,
+                diff_text, spec_text, run_dir, repo_root, intent_rule_ids,
             )
             verdicts.append(verdict)
 
@@ -327,6 +342,7 @@ def run_verification(
     # Write verdicts
     verdicts_path = run_dir / "verdicts.json"
     verdicts_path.write_text(json.dumps(verdicts, indent=2))
+    record_timing(run_dir, "verify", started, _now())
 
     # Print summary table
     proven = sum(1 for v in verdicts if v["verdict"] == "PROVEN")
@@ -356,3 +372,96 @@ def _print_summary(verdicts: list[dict], proven: int, rejected: int) -> None:
     print()
     print(f"PROVEN: {proven}   REJECTED: {rejected}   TOTAL: {proven + rejected}")
     print()
+
+
+# ── After-fix check ───────────────────────────────────────────────────────────
+
+AFTER_FIX_RUNS = 3
+
+
+def run_after_fix_check(
+    pr_branch: str,
+    run_dir: Path,
+    repo_root: Path,
+    keep: bool = False,
+) -> None:
+    """Re-run every PROVEN/UNFIXED proof test on the fixed PR branch.
+
+    A proof test counts as fixed only if it passes on all AFTER_FIX_RUNS fresh
+    runs. A PROVEN finding whose test still does not pass becomes UNFIXED.
+    Also runs the full demo-app suite once and writes run_dir/fix_check.json.
+    """
+    if not run_dir.is_absolute():
+        run_dir = repo_root / run_dir
+
+    verdicts_path = run_dir / "verdicts.json"
+    verdicts: list[dict] = json.loads(verdicts_path.read_text())
+    started = _now()
+
+    pr_worktree = run_dir / "worktrees" / "pr"
+    _git("worktree", "prune", cwd=repo_root)
+    _add_worktree(pr_worktree, pr_branch, repo_root)
+    try:
+        pr_sha = _git("rev-parse", "--short", pr_branch, cwd=repo_root)
+        for v in verdicts:
+            if v["verdict"] not in ("PROVEN", "UNFIXED"):
+                continue
+            test_path = repo_root / v["test_path"]
+            copy_test_to_worktree(test_path, pr_worktree)
+            outcomes = [
+                run_pytest_once(
+                    test_path.name, pr_worktree,
+                    run_dir / "junit" / f"{v['id']}-fixed{i}.xml",
+                )
+                for i in range(1, AFTER_FIX_RUNS + 1)
+            ]
+            fixed, runs = after_fix_status(outcomes)
+            v["after_fix"] = {"passes": fixed, "runs": runs, "pr_sha": pr_sha}
+            if not fixed and v["verdict"] == "PROVEN":
+                v["verdict"] = "UNFIXED"
+
+        suite = subprocess.run(
+            [sys.executable, "-m", "pytest", "demo-app/tests", "-q", "-p", "no:cacheprovider"],
+            cwd=pr_worktree, capture_output=True, text=True, timeout=300,
+        )
+        lines = [ln for ln in suite.stdout.splitlines() if ln.strip()]
+        fix_check = {
+            "pr": pr_branch,
+            "pr_sha": pr_sha,
+            "suite_green": suite.returncode == 0,
+            "suite_summary": lines[-1] if lines else "",
+        }
+    finally:
+        if not keep:
+            teardown_worktrees(run_dir, repo_root)
+
+    verdicts_path.write_text(json.dumps(verdicts, indent=2))
+    (run_dir / "fix_check.json").write_text(json.dumps(fix_check, indent=2))
+    record_timing(run_dir, "verify_after_fix", started, _now())
+
+    print()
+    for v in verdicts:
+        if "after_fix" in v:
+            af = v["after_fix"]
+            print(f"{v['id']:<8} {v['verdict']:<9} passes after fix: {af['runs']}  "
+                  f"fix_commit={v.get('fix_commit')}")
+    print(f"\nFull suite on {pr_branch}@{pr_sha}: {fix_check['suite_summary']}\n")
+
+
+# ── Timing ────────────────────────────────────────────────────────────────────
+
+def _now() -> datetime:
+    return datetime.now(tz=timezone.utc).replace(microsecond=0)
+
+
+def record_timing(run_dir: Path, stage: str, start: datetime, end: datetime) -> None:
+    """Merge {stage: {start, end, seconds, by}} into run_dir/timing.json."""
+    path = run_dir / "timing.json"
+    timing = json.loads(path.read_text()) if path.exists() else {"pr": run_dir.name}
+    timing[stage] = {
+        "start": start.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "end": end.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "seconds": int((end - start).total_seconds()),
+        "by": "crucible-cli",
+    }
+    path.write_text(json.dumps(timing, indent=2))
