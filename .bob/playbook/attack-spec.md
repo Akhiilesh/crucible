@@ -10,8 +10,9 @@ Work through `runs/<pr>/intent.json` entry by entry. For each `{behaviour, rule_
 2. Design a test that will fail if the implementation violates that requirement.
 3. Write the test and the finding.
 
-Do not skip any entry in intent.json. If you cannot write a meaningful test for a rule (e.g.
-it is a pure read-only query with no observable side effect), note it and move to the next.
+Consider every entry in intent.json. If there are more entries than the 5-finding limit in
+`attack-common.md`, keep the tests most likely to expose a real violation. If you cannot write a
+meaningful test for a rule, note it and move to the next.
 
 ## Approach
 

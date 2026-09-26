@@ -43,10 +43,10 @@ Test file requirements:
     `datetime`, `json`, standard library only.
   - For `app.store` direct access, use `store.orders[oid].model_copy(update={...})`.
 - Write URL paths as literal strings or simple f-strings only, e.g.
-  `f"/orders/{oid}/refund"`. Do not build URLs by concatenation or helper functions.
-- To test time-dependent behaviour, backdate a timestamp by editing the store directly:
+  `f"/orders/{oid}/cancel"`. Do not build URLs by concatenation or helper functions.
+- To test time-dependent behaviour, backdate any timestamp field by editing the store directly:
   ```python
-  store.orders[oid] = store.orders[oid].model_copy(update={"delivered_at": past_dt})
+  store.orders[oid] = store.orders[oid].model_copy(update={"<timestamp_field>": past_dt})
   ```
   Do not import or use any time-mocking library.
 - No comments or docstrings that mention branch names or planted bugs.
@@ -59,7 +59,7 @@ Test file requirements:
   "id": "<LENS>-<n>",
   "lens": "<lens>",
   "claim": "one plain English sentence stating the expected behaviour",
-  "basis": "spec/orders.md#R16",
+  "basis": "spec/orders.md#R<n>",
   "test_path": "runs/<pr>/tests/test_<lens>_<n>.py"
 }
 ```
