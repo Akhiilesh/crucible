@@ -497,3 +497,43 @@ class TestAfterFixStatus:
 
     def test_empty_is_not_fixed(self):
         assert after_fix_status([]) == (False, "0/0")
+
+
+# ── Merge ─────────────────────────────────────────────────────────────────────
+
+from crucible.merge import attack_timing, merge_findings  # noqa: E402
+
+
+def _f(lens, n):
+    return {"id": f"{lens.upper()}-{n}", "lens": lens, "claim": "c", "basis": "no_5xx",
+            "test_path": f"runs/x/tests/test_{lens}_{n}.py"}
+
+
+class TestMerge:
+    def test_ids_assigned_in_lens_order(self):
+        merged = merge_findings({"spec": [_f("spec", 1)], "edge": [_f("edge", 1), _f("edge", 2)]})
+        assert [(m["id"], m["lens_id"]) for m in merged] == [
+            ("F-001", "EDGE-1"), ("F-002", "EDGE-2"), ("F-003", "SPEC-1")]
+
+    def test_caps_five_per_lens(self):
+        merged = merge_findings({"state": [_f("state", n) for n in range(1, 8)]})
+        assert len(merged) == 5
+
+    def test_fields_unchanged(self):
+        (m,) = merge_findings({"edge": [_f("edge", 1)]})
+        assert m["claim"] == "c" and m["basis"] == "no_5xx" and m["test_path"].endswith("edge_1.py")
+
+    def test_overlapping_windows_are_parallel(self):
+        t = attack_timing({
+            "edge": {"start": "2026-01-01T00:00:00Z", "end": "2026-01-01T00:00:40Z"},
+            "spec": {"start": "2026-01-01T00:00:01Z", "end": "2026-01-01T00:00:45Z"},
+        }, {"edge": 5, "spec": 3})
+        assert t["mode"] == "parallel" and t["seconds"] == 45
+        assert t["lenses"]["spec"]["findings"] == 3
+
+    def test_back_to_back_windows_are_sequential(self):
+        t = attack_timing({
+            "edge": {"start": "2026-01-01T00:00:00Z", "end": "2026-01-01T00:00:40Z"},
+            "spec": {"start": "2026-01-01T00:00:40Z", "end": "2026-01-01T00:01:20Z"},
+        }, {})
+        assert t["mode"] == "sequential"

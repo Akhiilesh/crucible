@@ -36,6 +36,15 @@ def verify(
 
 
 @app.command()
+def merge(
+    run_dir: str = typer.Option(..., help="Run directory containing findings/<lens>.json"),
+) -> None:
+    """Merge per-lens attacker findings into findings.json and record attack timing."""
+    from crucible.merge import run_merge
+    run_merge(Path(run_dir), _REPO_ROOT)
+
+
+@app.command()
 def report(
     run_dir: str = typer.Option(..., help="Directory containing verdicts.json"),
     base: str = typer.Option("main", help="Base branch the spec is read from"),
