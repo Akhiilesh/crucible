@@ -40,12 +40,17 @@ class Order(BaseModel):
     status: OrderStatus
     created_at: datetime
     delivered_at: Optional[datetime] = None
+    discount_percent: Optional[int] = None
 
 
 # ── Request / response shapes ──────────────────────────────────────────────
 
 class CreateOrderRequest(BaseModel):
     items: list[OrderItem]
+
+
+class DiscountRequest(BaseModel):
+    percent: int
 
 
 class OrderResponse(BaseModel):
@@ -56,3 +61,4 @@ class OrderResponse(BaseModel):
     status: OrderStatus
     created_at: datetime
     delivered_at: Optional[datetime] = None
+    discount_percent: Optional[int] = None

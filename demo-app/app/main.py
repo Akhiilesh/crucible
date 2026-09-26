@@ -1,4 +1,4 @@
-"""FastAPI orders service — base implementation (no feature branches yet)."""
+"""FastAPI orders service — with discount endpoint (pr-2-discounts)."""
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -8,6 +8,7 @@ from fastapi import FastAPI, Header, HTTPException
 import app.store as store
 from app.models import (
     CreateOrderRequest,
+    DiscountRequest,
     Order,
     OrderResponse,
     OrderStatus,
@@ -113,6 +114,33 @@ def deliver_order(
     updated = order.model_copy(update={
         "status": OrderStatus.delivered,
         "delivered_at": datetime.now(tz=timezone.utc),
+    })
+    store.orders[order_id] = updated
+    return _order_to_response(updated)
+
+
+@app.post("/orders/{order_id}/discount", response_model=OrderResponse)
+def apply_discount(
+    order_id: str,
+    body: DiscountRequest,
+    x_user_id: str = Header(...),
+) -> OrderResponse:
+    """Apply a percentage discount to a placed order."""
+    user_id = _require_user(x_user_id)
+    order = _require_own_order(order_id, user_id)
+
+    if body.percent < 1 or body.percent > 50:
+        raise HTTPException(
+            status_code=400,
+            detail="Discount percent must be between 1 and 50 inclusive",
+        )
+
+    discount_amount = (order.total_paise * body.percent) // 100
+    new_total = max(0, order.total_paise - discount_amount)
+
+    updated = order.model_copy(update={
+        "total_paise": new_total,
+        "discount_percent": body.percent,
     })
     store.orders[order_id] = updated
     return _order_to_response(updated)
