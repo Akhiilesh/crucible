@@ -1,0 +1,37 @@
+[
+  {
+    "id": "SECURITY-1",
+    "lens": "security",
+    "claim": "A discount can only be applied by the owner of the order; any other user must receive 403.",
+    "basis": "spec/orders.md#R22",
+    "test_path": "runs/pr-2-discounts/tests/test_security_1.py"
+  },
+  {
+    "id": "SECURITY-2",
+    "lens": "security",
+    "claim": "Calling POST /orders/{id}/discount without the X-User-Id header must return 422, not 500.",
+    "basis": "no_5xx",
+    "test_path": "runs/pr-2-discounts/tests/test_security_2.py"
+  },
+  {
+    "id": "SECURITY-3",
+    "lens": "security",
+    "claim": "Calling POST /orders/{id}/discount with an unknown X-User-Id must return 401.",
+    "basis": "spec/orders.md#R7",
+    "test_path": "runs/pr-2-discounts/tests/test_security_3.py"
+  },
+  {
+    "id": "SECURITY-4",
+    "lens": "security",
+    "claim": "A 403 response from POST /orders/{id}/discount must not expose the order total or other user data.",
+    "basis": "no_data_leak",
+    "test_path": "runs/pr-2-discounts/tests/test_security_4.py"
+  },
+  {
+    "id": "SECURITY-5",
+    "lens": "security",
+    "claim": "POST /orders/{id}/discount with a null-byte or special-character X-User-Id must not return 500.",
+    "basis": "no_5xx",
+    "test_path": "runs/pr-2-discounts/tests/test_security_5.py"
+  }
+]

@@ -1,0 +1,37 @@
+[
+  {
+    "id": "EDGE-1",
+    "lens": "edge",
+    "claim": "A user must not be able to bulk-cancel orders that belong to another user.",
+    "basis": "spec/orders.md#R8",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_edge_1.py"
+  },
+  {
+    "id": "EDGE-2",
+    "lens": "edge",
+    "claim": "When the same order ID appears more than once in the bulk-cancel list, it must not appear in both the cancelled and skipped response arrays.",
+    "basis": "spec/orders.md#R28",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_edge_2.py"
+  },
+  {
+    "id": "EDGE-3",
+    "lens": "edge",
+    "claim": "Sending a bulk-cancel request with the order_ids field absent must return 400.",
+    "basis": "spec/orders.md#R26",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_edge_3.py"
+  },
+  {
+    "id": "EDGE-4",
+    "lens": "edge",
+    "claim": "Stock must not be restored when an unauthorized user attempts to bulk-cancel another user's order.",
+    "basis": "spec/orders.md#R27",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_edge_4.py"
+  },
+  {
+    "id": "EDGE-5",
+    "lens": "edge",
+    "claim": "Sending order_ids as a non-list value must not produce a 5xx server error.",
+    "basis": "no_5xx",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_edge_5.py"
+  }
+]

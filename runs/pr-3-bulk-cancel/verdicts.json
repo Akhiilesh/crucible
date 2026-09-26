@@ -1,0 +1,395 @@
+[
+  {
+    "id": "F-001",
+    "lens_id": "EDGE-1",
+    "lens": "edge",
+    "claim": "A user must not be able to bulk-cancel orders that belong to another user.",
+    "basis": "spec/orders.md#R8",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_edge_1.py",
+    "gate_results": {
+      "fails_on_pr": true,
+      "blame": "passes_on_base",
+      "repro": "3/3",
+      "grounded": true
+    },
+    "verdict": "PROVEN",
+    "reason": "",
+    "fix_commit": "4e542ed",
+    "after_fix": {
+      "passes": true,
+      "runs": "3/3",
+      "pr_sha": "f09a0f8"
+    }
+  },
+  {
+    "id": "F-002",
+    "lens_id": "EDGE-2",
+    "lens": "edge",
+    "claim": "When the same order ID appears more than once in the bulk-cancel list, it must not appear in both the cancelled and skipped response arrays.",
+    "basis": "spec/orders.md#R28",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_edge_2.py",
+    "gate_results": {
+      "fails_on_pr": true,
+      "blame": "new_code",
+      "repro": "3/3",
+      "grounded": true
+    },
+    "verdict": "PROVEN",
+    "reason": "",
+    "fix_commit": "10ff45f",
+    "after_fix": {
+      "passes": true,
+      "runs": "3/3",
+      "pr_sha": "f09a0f8"
+    }
+  },
+  {
+    "id": "F-003",
+    "lens_id": "EDGE-3",
+    "lens": "edge",
+    "claim": "Sending a bulk-cancel request with the order_ids field absent must return 400.",
+    "basis": "spec/orders.md#R26",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_edge_3.py",
+    "gate_results": {
+      "fails_on_pr": true,
+      "blame": "new_code",
+      "repro": "3/3",
+      "grounded": true
+    },
+    "verdict": "PROVEN",
+    "reason": "",
+    "fix_commit": "ff01544",
+    "after_fix": {
+      "passes": true,
+      "runs": "3/3",
+      "pr_sha": "f09a0f8"
+    }
+  },
+  {
+    "id": "F-004",
+    "lens_id": "EDGE-4",
+    "lens": "edge",
+    "claim": "Stock must not be restored when an unauthorized user attempts to bulk-cancel another user's order.",
+    "basis": "spec/orders.md#R27",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_edge_4.py",
+    "gate_results": {
+      "fails_on_pr": true,
+      "blame": "passes_on_base",
+      "repro": "3/3",
+      "grounded": true
+    },
+    "verdict": "PROVEN",
+    "reason": "",
+    "fix_commit": "4e542ed",
+    "after_fix": {
+      "passes": true,
+      "runs": "3/3",
+      "pr_sha": "f09a0f8"
+    }
+  },
+  {
+    "id": "F-005",
+    "lens_id": "EDGE-5",
+    "lens": "edge",
+    "claim": "Sending order_ids as a non-list value must not produce a 5xx server error.",
+    "basis": "no_5xx",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_edge_5.py",
+    "gate_results": {
+      "fails_on_pr": false,
+      "blame": null,
+      "repro": null,
+      "grounded": true
+    },
+    "verdict": "REJECTED",
+    "reason": "does not fail on PR",
+    "fix_commit": null
+  },
+  {
+    "id": "F-006",
+    "lens_id": "SECURITY-1",
+    "lens": "security",
+    "claim": "A user must not be able to cancel an order that belongs to another user via bulk-cancel.",
+    "basis": "spec/orders.md#R7",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_security_1.py",
+    "gate_results": {
+      "fails_on_pr": true,
+      "blame": "passes_on_base",
+      "repro": "3/3",
+      "grounded": true
+    },
+    "verdict": "PROVEN",
+    "reason": "",
+    "fix_commit": "4e542ed",
+    "after_fix": {
+      "passes": true,
+      "runs": "3/3",
+      "pr_sha": "f09a0f8"
+    }
+  },
+  {
+    "id": "F-007",
+    "lens_id": "SECURITY-2",
+    "lens": "security",
+    "claim": "Calling POST /orders/bulk-cancel without an X-User-Id header must return 401 or 422, never 2xx or 500.",
+    "basis": "no_5xx",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_security_2.py",
+    "gate_results": {
+      "fails_on_pr": false,
+      "blame": null,
+      "repro": null,
+      "grounded": true
+    },
+    "verdict": "REJECTED",
+    "reason": "does not fail on PR",
+    "fix_commit": null
+  },
+  {
+    "id": "F-008",
+    "lens_id": "SECURITY-3",
+    "lens": "security",
+    "claim": "Calling POST /orders/bulk-cancel with an unknown user ID must return 401.",
+    "basis": "spec/orders.md#R7",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_security_3.py",
+    "gate_results": {
+      "fails_on_pr": false,
+      "blame": null,
+      "repro": null,
+      "grounded": true
+    },
+    "verdict": "REJECTED",
+    "reason": "does not fail on PR",
+    "fix_commit": null
+  },
+  {
+    "id": "F-009",
+    "lens_id": "SECURITY-4",
+    "lens": "security",
+    "claim": "Accessing another user's order via bulk-cancel must return 403.",
+    "basis": "spec/orders.md#R8",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_security_4.py",
+    "gate_results": {
+      "fails_on_pr": true,
+      "blame": "new_code",
+      "repro": "3/3",
+      "grounded": true
+    },
+    "verdict": "PROVEN",
+    "reason": "",
+    "fix_commit": "4e542ed",
+    "after_fix": {
+      "passes": true,
+      "runs": "3/3",
+      "pr_sha": "f09a0f8"
+    }
+  },
+  {
+    "id": "F-010",
+    "lens_id": "SECURITY-5",
+    "lens": "security",
+    "claim": "A bulk-cancel request with a header injection user ID must not return 500 or expose a stack trace.",
+    "basis": "no_unhandled_exception",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_security_5.py",
+    "gate_results": {
+      "fails_on_pr": false,
+      "blame": null,
+      "repro": null,
+      "grounded": true
+    },
+    "verdict": "REJECTED",
+    "reason": "does not fail on PR",
+    "fix_commit": null
+  },
+  {
+    "id": "F-011",
+    "lens_id": "STATE-1",
+    "lens": "state",
+    "claim": "Bulk-cancel must not change the status of an order that belongs to a different user.",
+    "basis": "spec/orders.md#R7",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_state_1.py",
+    "gate_results": {
+      "fails_on_pr": true,
+      "blame": "new_code",
+      "repro": "3/3",
+      "grounded": true
+    },
+    "verdict": "UNFIXED",
+    "reason": "",
+    "fix_commit": null,
+    "unfixed_reason": "conflicts with F-009 (committed with fix 4e542ed): for another user's order id, F-009 requires 403 (R8) while this test requires 200 with the order skipped. Skipping instead of 403 turns F-009 red. Needs a human decision on bulk-cancel semantics.",
+    "after_fix": {
+      "passes": false,
+      "runs": "0/3",
+      "pr_sha": "f09a0f8"
+    }
+  },
+  {
+    "id": "F-012",
+    "lens_id": "STATE-2",
+    "lens": "state",
+    "claim": "Stock must not be restored when bulk-cancel processes an order owned by a different user.",
+    "basis": "spec/orders.md#R7",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_state_2.py",
+    "gate_results": {
+      "fails_on_pr": true,
+      "blame": "new_code",
+      "repro": "3/3",
+      "grounded": true
+    },
+    "verdict": "UNFIXED",
+    "reason": "",
+    "fix_commit": null,
+    "unfixed_reason": "conflicts with F-009 (committed with fix 4e542ed): for another user's order id, F-009 requires 403 (R8) while this test requires 200 with the order skipped. Skipping instead of 403 turns F-009 red. Needs a human decision on bulk-cancel semantics.",
+    "after_fix": {
+      "passes": false,
+      "runs": "0/3",
+      "pr_sha": "f09a0f8"
+    }
+  },
+  {
+    "id": "F-013",
+    "lens_id": "STATE-3",
+    "lens": "state",
+    "claim": "Calling bulk-cancel twice with the same order IDs must not restore stock more than once.",
+    "basis": "no_double_effect",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_state_3.py",
+    "gate_results": {
+      "fails_on_pr": false,
+      "blame": null,
+      "repro": null,
+      "grounded": true
+    },
+    "verdict": "REJECTED",
+    "reason": "does not fail on PR",
+    "fix_commit": null
+  },
+  {
+    "id": "F-014",
+    "lens_id": "STATE-4",
+    "lens": "state",
+    "claim": "A delivered order included in a bulk-cancel request must be silently skipped and its stock must not be restored.",
+    "basis": "spec/orders.md#R28",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_state_4.py",
+    "gate_results": {
+      "fails_on_pr": false,
+      "blame": null,
+      "repro": null,
+      "grounded": true
+    },
+    "verdict": "REJECTED",
+    "reason": "does not fail on PR",
+    "fix_commit": null
+  },
+  {
+    "id": "F-015",
+    "lens_id": "STATE-5",
+    "lens": "state",
+    "claim": "When bulk-cancel receives IDs belonging to multiple users, only the requesting user's placed orders are cancelled and have stock restored.",
+    "basis": "spec/orders.md#R27",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_state_5.py",
+    "gate_results": {
+      "fails_on_pr": true,
+      "blame": "new_code",
+      "repro": "3/3",
+      "grounded": true
+    },
+    "verdict": "UNFIXED",
+    "reason": "",
+    "fix_commit": null,
+    "unfixed_reason": "conflicts with F-009 (committed with fix 4e542ed): for another user's order id, F-009 requires 403 (R8) while this test requires 200 with the order skipped. Skipping instead of 403 turns F-009 red. Needs a human decision on bulk-cancel semantics.",
+    "after_fix": {
+      "passes": false,
+      "runs": "0/3",
+      "pr_sha": "f09a0f8"
+    }
+  },
+  {
+    "id": "F-016",
+    "lens_id": "SPEC-1",
+    "lens": "spec",
+    "claim": "POST /orders/bulk-cancel must return 400 when the order_ids list is empty.",
+    "basis": "spec/orders.md#R26",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_spec_1.py",
+    "gate_results": {
+      "fails_on_pr": false,
+      "blame": null,
+      "repro": null,
+      "grounded": true
+    },
+    "verdict": "REJECTED",
+    "reason": "does not fail on PR",
+    "fix_commit": null
+  },
+  {
+    "id": "F-017",
+    "lens_id": "SPEC-2",
+    "lens": "spec",
+    "claim": "Only the user who created an order may cancel it; bulk cancel must not cancel orders belonging to other users.",
+    "basis": "spec/orders.md#R7",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_spec_2.py",
+    "gate_results": {
+      "fails_on_pr": true,
+      "blame": "passes_on_base",
+      "repro": "3/3",
+      "grounded": true
+    },
+    "verdict": "PROVEN",
+    "reason": "",
+    "fix_commit": "4e542ed",
+    "after_fix": {
+      "passes": true,
+      "runs": "3/3",
+      "pr_sha": "f09a0f8"
+    }
+  },
+  {
+    "id": "F-018",
+    "lens_id": "SPEC-3",
+    "lens": "spec",
+    "claim": "Stock is restored only for orders that were actually cancelled by the bulk-cancel request, not for skipped orders.",
+    "basis": "spec/orders.md#R27",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_spec_3.py",
+    "gate_results": {
+      "fails_on_pr": false,
+      "blame": null,
+      "repro": null,
+      "grounded": true
+    },
+    "verdict": "REJECTED",
+    "reason": "does not fail on PR",
+    "fix_commit": null
+  },
+  {
+    "id": "F-019",
+    "lens_id": "SPEC-4",
+    "lens": "spec",
+    "claim": "Orders that are not in placed status are silently skipped during bulk cancel and appear in the skipped list.",
+    "basis": "spec/orders.md#R28",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_spec_4.py",
+    "gate_results": {
+      "fails_on_pr": false,
+      "blame": null,
+      "repro": null,
+      "grounded": true
+    },
+    "verdict": "REJECTED",
+    "reason": "does not fail on PR",
+    "fix_commit": null
+  },
+  {
+    "id": "F-020",
+    "lens_id": "SPEC-5",
+    "lens": "spec",
+    "claim": "POST /orders/bulk-cancel cancels each eligible placed order and restores the stock of each cancelled order's items.",
+    "basis": "spec/orders.md#R25",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_spec_5.py",
+    "gate_results": {
+      "fails_on_pr": false,
+      "blame": null,
+      "repro": null,
+      "grounded": true
+    },
+    "verdict": "REJECTED",
+    "reason": "does not fail on PR",
+    "fix_commit": null
+  }
+]

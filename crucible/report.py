@@ -107,7 +107,6 @@ def build_context(run_dir: Path, repo_root: Path, base: str = "main") -> dict:
             "green": af["runs"] if af else None,
             "is_fixed": v in fixed,
         })
-    unique_bugs = len(first_by_fix) + sum(1 for v in proven if not v.get("fix_commit"))
 
     by_reason: dict[str, list[dict]] = {}
     for v in rejected:
@@ -128,7 +127,7 @@ def build_context(run_dir: Path, repo_root: Path, base: str = "main") -> dict:
         "rejected": len(rejected),
         "fixed": len(fixed),
         "unfixed": len(unfixed),
-        "unique_bugs": unique_bugs,
+        "distinct_fixes": len(first_by_fix),
         "precision": _pct(len(proven), len(proven)),
         "confirmation_rate": _pct(len(proven), len(verdicts)),
         "cards": cards,

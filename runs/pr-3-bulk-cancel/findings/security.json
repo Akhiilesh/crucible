@@ -1,0 +1,37 @@
+[
+  {
+    "id": "SECURITY-1",
+    "lens": "security",
+    "claim": "A user must not be able to cancel an order that belongs to another user via bulk-cancel.",
+    "basis": "spec/orders.md#R7",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_security_1.py"
+  },
+  {
+    "id": "SECURITY-2",
+    "lens": "security",
+    "claim": "Calling POST /orders/bulk-cancel without an X-User-Id header must return 401 or 422, never 2xx or 500.",
+    "basis": "no_5xx",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_security_2.py"
+  },
+  {
+    "id": "SECURITY-3",
+    "lens": "security",
+    "claim": "Calling POST /orders/bulk-cancel with an unknown user ID must return 401.",
+    "basis": "spec/orders.md#R7",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_security_3.py"
+  },
+  {
+    "id": "SECURITY-4",
+    "lens": "security",
+    "claim": "Accessing another user's order via bulk-cancel must return 403.",
+    "basis": "spec/orders.md#R8",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_security_4.py"
+  },
+  {
+    "id": "SECURITY-5",
+    "lens": "security",
+    "claim": "A bulk-cancel request with a header injection user ID must not return 500 or expose a stack trace.",
+    "basis": "no_unhandled_exception",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_security_5.py"
+  }
+]

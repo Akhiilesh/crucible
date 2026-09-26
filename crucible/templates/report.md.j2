@@ -9,7 +9,7 @@
 |---|---|
 | Raw suspicions (attacker findings) | {{ total }} |
 | Proven by failing test (all 4 gates) | {{ proven }} |
-| Unique bugs (distinct fixes) | {{ unique_bugs }} |
+| Distinct fixes (root causes fixed) | {{ distinct_fixes }} |
 | Rejected as noise | {{ rejected }} |
 | Fixed (proof test now passes 3/3) | {{ fixed }} |
 | Unfixed | {{ unfixed }} |
@@ -46,6 +46,10 @@ Attack mode: **{{ attack_mode }}** ({{ lenses | length }} lenses).
 - **Fix commit:** {% if c.fix_commit %}`{{ c.fix_commit }}`{% if c.same_fix_as %} (same root cause as {{ c.same_fix_as }}){% endif %}{% else %}none{% endif %}
 
 
+{% if c.unfixed_reason %}
+- **Needs a human:** {{ c.unfixed_reason }}
+
+{% endif %}
 <details><summary>Proof test ({{ c.test_path }})</summary>
 
 ```python

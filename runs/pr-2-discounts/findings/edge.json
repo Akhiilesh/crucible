@@ -1,0 +1,37 @@
+[
+  {
+    "id": "EDGE-1",
+    "lens": "edge",
+    "claim": "A discount percent of 0 is outside the valid range 1-50 and must return 400.",
+    "basis": "spec/orders.md#R24",
+    "test_path": "runs/pr-2-discounts/tests/test_edge_1.py"
+  },
+  {
+    "id": "EDGE-2",
+    "lens": "edge",
+    "claim": "A discount percent of 51 is outside the valid range 1-50 and must return 400.",
+    "basis": "spec/orders.md#R24",
+    "test_path": "runs/pr-2-discounts/tests/test_edge_2.py"
+  },
+  {
+    "id": "EDGE-3",
+    "lens": "edge",
+    "claim": "A negative discount percent is outside the valid range 1-50 and must return 400.",
+    "basis": "spec/orders.md#R24",
+    "test_path": "runs/pr-2-discounts/tests/test_edge_3.py"
+  },
+  {
+    "id": "EDGE-4",
+    "lens": "edge",
+    "claim": "A discount can only be applied by the owner of the order; any other caller must receive 403.",
+    "basis": "spec/orders.md#R22",
+    "test_path": "runs/pr-2-discounts/tests/test_edge_4.py"
+  },
+  {
+    "id": "EDGE-5",
+    "lens": "edge",
+    "claim": "A discount percent far above 50 is outside the valid range and must return 400.",
+    "basis": "spec/orders.md#R24",
+    "test_path": "runs/pr-2-discounts/tests/test_edge_5.py"
+  }
+]

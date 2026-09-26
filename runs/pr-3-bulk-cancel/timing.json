@@ -1,0 +1,64 @@
+{
+  "pr": "pr-3-bulk-cancel",
+  "intent": {
+    "start": "2026-09-26T09:14:26Z",
+    "end": "2026-09-26T09:14:42Z",
+    "seconds": 16,
+    "by": "bob"
+  },
+  "attack": {
+    "mode": "parallel",
+    "start": "2026-09-26T09:14:57Z",
+    "end": "2026-09-26T09:16:35Z",
+    "seconds": 98,
+    "by": "bob-subagents",
+    "lenses": {
+      "edge": {
+        "lens": "edge",
+        "start": "2026-09-26T09:14:57Z",
+        "end": "2026-09-26T09:16:16Z",
+        "seconds": 79,
+        "findings": 5
+      },
+      "security": {
+        "lens": "security",
+        "start": "2026-09-26T09:14:57Z",
+        "end": "2026-09-26T09:16:35Z",
+        "seconds": 98,
+        "findings": 5
+      },
+      "state": {
+        "lens": "state",
+        "start": "2026-09-26T09:14:57Z",
+        "end": "2026-09-26T09:16:17Z",
+        "seconds": 80,
+        "findings": 5
+      },
+      "spec": {
+        "lens": "spec",
+        "start": "2026-09-26T09:14:57Z",
+        "end": "2026-09-26T09:15:44Z",
+        "seconds": 47,
+        "findings": 5
+      }
+    }
+  },
+  "verify": {
+    "start": "2026-09-26T10:50:02Z",
+    "end": "2026-09-26T10:50:17Z",
+    "seconds": 15,
+    "by": "crucible-cli"
+  },
+  "fix": {
+    "start": "2026-09-26T10:52:39Z",
+    "end": "2026-09-26T10:53:16Z",
+    "seconds": 37,
+    "by": "claude-code"
+  },
+  "verify_after_fix": {
+    "start": "2026-09-26T10:53:45Z",
+    "end": "2026-09-26T10:53:54Z",
+    "seconds": 9,
+    "by": "crucible-cli"
+  }
+}

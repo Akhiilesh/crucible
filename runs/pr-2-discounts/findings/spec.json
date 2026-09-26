@@ -1,0 +1,37 @@
+[
+  {
+    "id": "SPEC-1",
+    "lens": "spec",
+    "claim": "A discount percentage of 0 is outside the range 1–50 and must return 400.",
+    "basis": "spec/orders.md#R24",
+    "test_path": "runs/pr-2-discounts/tests/test_spec_1.py"
+  },
+  {
+    "id": "SPEC-2",
+    "lens": "spec",
+    "claim": "A discount percentage of 51 is outside the range 1–50 and must return 400.",
+    "basis": "spec/orders.md#R24",
+    "test_path": "runs/pr-2-discounts/tests/test_spec_2.py"
+  },
+  {
+    "id": "SPEC-3",
+    "lens": "spec",
+    "claim": "A discount can only be applied by the owner of the order; any other caller must receive 403.",
+    "basis": "spec/orders.md#R22",
+    "test_path": "runs/pr-2-discounts/tests/test_spec_3.py"
+  },
+  {
+    "id": "SPEC-4",
+    "lens": "spec",
+    "claim": "A discount percentage of 1 is the minimum valid value and must be accepted with a 200 response.",
+    "basis": "spec/orders.md#R21",
+    "test_path": "runs/pr-2-discounts/tests/test_spec_4.py"
+  },
+  {
+    "id": "SPEC-5",
+    "lens": "spec",
+    "claim": "The order total after a discount can never go below 0.",
+    "basis": "spec/orders.md#R23",
+    "test_path": "runs/pr-2-discounts/tests/test_spec_5.py"
+  }
+]

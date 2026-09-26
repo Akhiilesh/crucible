@@ -403,6 +403,21 @@ def run_after_fix_check(
     _add_worktree(pr_worktree, pr_branch, repo_root)
     try:
         pr_sha = _git("rev-parse", "--short", pr_branch, cwd=repo_root)
+
+        # Full suite on the branch exactly as committed (before copying in any
+        # UNFIXED proof tests, which are deliberately not committed)
+        suite = subprocess.run(
+            [sys.executable, "-m", "pytest", "demo-app/tests", "-q", "-p", "no:cacheprovider"],
+            cwd=pr_worktree, capture_output=True, text=True, timeout=300,
+        )
+        lines = [ln for ln in suite.stdout.splitlines() if ln.strip()]
+        fix_check = {
+            "pr": pr_branch,
+            "pr_sha": pr_sha,
+            "suite_green": suite.returncode == 0,
+            "suite_summary": lines[-1] if lines else "",
+        }
+
         for v in verdicts:
             if v["verdict"] not in ("PROVEN", "UNFIXED"):
                 continue
@@ -420,17 +435,6 @@ def run_after_fix_check(
             if not fixed and v["verdict"] == "PROVEN":
                 v["verdict"] = "UNFIXED"
 
-        suite = subprocess.run(
-            [sys.executable, "-m", "pytest", "demo-app/tests", "-q", "-p", "no:cacheprovider"],
-            cwd=pr_worktree, capture_output=True, text=True, timeout=300,
-        )
-        lines = [ln for ln in suite.stdout.splitlines() if ln.strip()]
-        fix_check = {
-            "pr": pr_branch,
-            "pr_sha": pr_sha,
-            "suite_green": suite.returncode == 0,
-            "suite_summary": lines[-1] if lines else "",
-        }
     finally:
         if not keep:
             teardown_worktrees(run_dir, repo_root)

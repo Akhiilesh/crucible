@@ -1,0 +1,42 @@
+[
+  {
+    "behaviour": "POST /orders/bulk-cancel accepts a list of order IDs and cancels each eligible order.",
+    "rule_id": "R25",
+    "endpoints": ["POST /orders/bulk-cancel"]
+  },
+  {
+    "behaviour": "An empty list of order IDs must return 400.",
+    "rule_id": "R26",
+    "endpoints": ["POST /orders/bulk-cancel"]
+  },
+  {
+    "behaviour": "Stock is restored only for orders that were actually cancelled by this request.",
+    "rule_id": "R27",
+    "endpoints": ["POST /orders/bulk-cancel"]
+  },
+  {
+    "behaviour": "Orders that are not in 'placed' status are silently skipped during bulk cancel.",
+    "rule_id": "R28",
+    "endpoints": ["POST /orders/bulk-cancel"]
+  },
+  {
+    "behaviour": "Only the user who created an order may read, modify, or cancel it.",
+    "rule_id": "R7",
+    "endpoints": ["POST /orders/bulk-cancel"]
+  },
+  {
+    "behaviour": "Accessing another user's order returns 403.",
+    "rule_id": "R8",
+    "endpoints": ["POST /orders/bulk-cancel"]
+  },
+  {
+    "behaviour": "Cancelling an order restores the stock of each item to its pre-order level.",
+    "rule_id": "R13",
+    "endpoints": ["POST /orders/bulk-cancel"]
+  },
+  {
+    "behaviour": "Only placed orders can be cancelled; any other status returns 400.",
+    "rule_id": "R14",
+    "endpoints": ["POST /orders/bulk-cancel"]
+  }
+]

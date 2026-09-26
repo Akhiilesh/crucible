@@ -105,7 +105,7 @@
   <div class="tiles">
     <div class="tile"><div class="v">{{ total }}</div><div class="k">Raw suspicions</div><div class="s">from {{ lenses | length or "all" }} attacker lenses</div></div>
     <div class="tile good"><div class="v">{{ proven }}</div><div class="k">Proven</div><div class="s">failing test, 4 gates</div></div>
-    <div class="tile"><div class="v">{{ unique_bugs }}</div><div class="k">Unique bugs</div><div class="s">distinct fixes</div></div>
+    <div class="tile"><div class="v">{{ distinct_fixes }}</div><div class="k">Distinct fixes</div><div class="s">root causes fixed</div></div>
     <div class="tile"><div class="v">{{ rejected }}</div><div class="k">Noise rejected</div><div class="s">never shown to reviewer</div></div>
     <div class="tile good"><div class="v">{{ fixed }}</div><div class="k">Fixed</div><div class="s">proof passes 3/3</div></div>
     <div class="tile {{ 'bad' if unfixed else '' }}"><div class="v">{{ unfixed }}</div><div class="k">Unfixed</div><div class="s">needs a human</div></div>
@@ -152,6 +152,9 @@
       Fix commit: {% if c.fix_commit %}<code>{{ c.fix_commit }}</code>{% if c.same_fix_as %} — same root cause as {{ c.same_fix_as }}, fixed by the same commit{% endif %}{% else %}none{% endif %}
       · Blame: {{ c.gate_results.blame }}
     </p>
+    {% if c.unfixed_reason %}
+    <p class="meta"><span class="amber">Needs a human</span> {{ c.unfixed_reason }}</p>
+    {% endif %}
     <details open>
       <summary>Proof test · <code>{{ c.test_path }}</code></summary>
       <pre><code>{{ c.test_code | trim }}</code></pre>

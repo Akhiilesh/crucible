@@ -1,0 +1,32 @@
+[
+  {
+    "behaviour": "A discount percentage must be between 1 and 50 inclusive; values outside this range must return 400.",
+    "rule_id": "R21",
+    "endpoints": ["POST /orders/{order_id}/discount"]
+  },
+  {
+    "behaviour": "A discount can only be applied by the owner of the order; any other caller must receive 403.",
+    "rule_id": "R22",
+    "endpoints": ["POST /orders/{order_id}/discount"]
+  },
+  {
+    "behaviour": "The order total after a discount can never go below 0.",
+    "rule_id": "R23",
+    "endpoints": ["POST /orders/{order_id}/discount"]
+  },
+  {
+    "behaviour": "A discount percentage outside the range 1–50 must return 400.",
+    "rule_id": "R24",
+    "endpoints": ["POST /orders/{order_id}/discount"]
+  },
+  {
+    "behaviour": "Only the user who created an order may read, modify, or cancel it.",
+    "rule_id": "R7",
+    "endpoints": ["POST /orders/{order_id}/discount"]
+  },
+  {
+    "behaviour": "Accessing another user's order returns 403.",
+    "rule_id": "R8",
+    "endpoints": ["POST /orders/{order_id}/discount"]
+  }
+]

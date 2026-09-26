@@ -1,0 +1,37 @@
+[
+  {
+    "id": "STATE-1",
+    "lens": "state",
+    "claim": "Applying a discount to an order that already has a discount must not compound the reduction a second time.",
+    "basis": "no_double_effect",
+    "test_path": "runs/pr-2-discounts/tests/test_state_1.py"
+  },
+  {
+    "id": "STATE-2",
+    "lens": "state",
+    "claim": "Attempting to apply a discount to a delivered order must return 400.",
+    "basis": "spec/orders.md#R21",
+    "test_path": "runs/pr-2-discounts/tests/test_state_2.py"
+  },
+  {
+    "id": "STATE-3",
+    "lens": "state",
+    "claim": "Attempting to apply a discount to a cancelled order must return 400.",
+    "basis": "spec/orders.md#R21",
+    "test_path": "runs/pr-2-discounts/tests/test_state_3.py"
+  },
+  {
+    "id": "STATE-4",
+    "lens": "state",
+    "claim": "The discount_percent recorded on the order must reflect the actual percentage reduction applied to the original order total.",
+    "basis": "spec/orders.md#R21",
+    "test_path": "runs/pr-2-discounts/tests/test_state_4.py"
+  },
+  {
+    "id": "STATE-5",
+    "lens": "state",
+    "claim": "Applying a discount to one order must leave every other order's total and discount_percent completely unchanged.",
+    "basis": "spec/orders.md#R21",
+    "test_path": "runs/pr-2-discounts/tests/test_state_5.py"
+  }
+]

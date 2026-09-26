@@ -1,0 +1,37 @@
+[
+  {
+    "id": "SPEC-1",
+    "lens": "spec",
+    "claim": "POST /orders/bulk-cancel must return 400 when the order_ids list is empty.",
+    "basis": "spec/orders.md#R26",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_spec_1.py"
+  },
+  {
+    "id": "SPEC-2",
+    "lens": "spec",
+    "claim": "Only the user who created an order may cancel it; bulk cancel must not cancel orders belonging to other users.",
+    "basis": "spec/orders.md#R7",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_spec_2.py"
+  },
+  {
+    "id": "SPEC-3",
+    "lens": "spec",
+    "claim": "Stock is restored only for orders that were actually cancelled by the bulk-cancel request, not for skipped orders.",
+    "basis": "spec/orders.md#R27",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_spec_3.py"
+  },
+  {
+    "id": "SPEC-4",
+    "lens": "spec",
+    "claim": "Orders that are not in placed status are silently skipped during bulk cancel and appear in the skipped list.",
+    "basis": "spec/orders.md#R28",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_spec_4.py"
+  },
+  {
+    "id": "SPEC-5",
+    "lens": "spec",
+    "claim": "POST /orders/bulk-cancel cancels each eligible placed order and restores the stock of each cancelled order's items.",
+    "basis": "spec/orders.md#R25",
+    "test_path": "runs/pr-3-bulk-cancel/tests/test_spec_5.py"
+  }
+]

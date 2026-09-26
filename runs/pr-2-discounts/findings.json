@@ -1,0 +1,162 @@
+[
+  {
+    "id": "F-001",
+    "lens_id": "EDGE-1",
+    "lens": "edge",
+    "claim": "A discount percent of 0 is outside the valid range 1-50 and must return 400.",
+    "basis": "spec/orders.md#R24",
+    "test_path": "runs/pr-2-discounts/tests/test_edge_1.py"
+  },
+  {
+    "id": "F-002",
+    "lens_id": "EDGE-2",
+    "lens": "edge",
+    "claim": "A discount percent of 51 is outside the valid range 1-50 and must return 400.",
+    "basis": "spec/orders.md#R24",
+    "test_path": "runs/pr-2-discounts/tests/test_edge_2.py"
+  },
+  {
+    "id": "F-003",
+    "lens_id": "EDGE-3",
+    "lens": "edge",
+    "claim": "A negative discount percent is outside the valid range 1-50 and must return 400.",
+    "basis": "spec/orders.md#R24",
+    "test_path": "runs/pr-2-discounts/tests/test_edge_3.py"
+  },
+  {
+    "id": "F-004",
+    "lens_id": "EDGE-4",
+    "lens": "edge",
+    "claim": "A discount can only be applied by the owner of the order; any other caller must receive 403.",
+    "basis": "spec/orders.md#R22",
+    "test_path": "runs/pr-2-discounts/tests/test_edge_4.py"
+  },
+  {
+    "id": "F-005",
+    "lens_id": "EDGE-5",
+    "lens": "edge",
+    "claim": "A discount percent far above 50 is outside the valid range and must return 400.",
+    "basis": "spec/orders.md#R24",
+    "test_path": "runs/pr-2-discounts/tests/test_edge_5.py"
+  },
+  {
+    "id": "F-006",
+    "lens_id": "SECURITY-1",
+    "lens": "security",
+    "claim": "A discount can only be applied by the owner of the order; any other user must receive 403.",
+    "basis": "spec/orders.md#R22",
+    "test_path": "runs/pr-2-discounts/tests/test_security_1.py"
+  },
+  {
+    "id": "F-007",
+    "lens_id": "SECURITY-2",
+    "lens": "security",
+    "claim": "Calling POST /orders/{id}/discount without the X-User-Id header must return 422, not 500.",
+    "basis": "no_5xx",
+    "test_path": "runs/pr-2-discounts/tests/test_security_2.py"
+  },
+  {
+    "id": "F-008",
+    "lens_id": "SECURITY-3",
+    "lens": "security",
+    "claim": "Calling POST /orders/{id}/discount with an unknown X-User-Id must return 401.",
+    "basis": "spec/orders.md#R7",
+    "test_path": "runs/pr-2-discounts/tests/test_security_3.py"
+  },
+  {
+    "id": "F-009",
+    "lens_id": "SECURITY-4",
+    "lens": "security",
+    "claim": "A 403 response from POST /orders/{id}/discount must not expose the order total or other user data.",
+    "basis": "no_data_leak",
+    "test_path": "runs/pr-2-discounts/tests/test_security_4.py"
+  },
+  {
+    "id": "F-010",
+    "lens_id": "SECURITY-5",
+    "lens": "security",
+    "claim": "POST /orders/{id}/discount with a null-byte or special-character X-User-Id must not return 500.",
+    "basis": "no_5xx",
+    "test_path": "runs/pr-2-discounts/tests/test_security_5.py"
+  },
+  {
+    "id": "F-011",
+    "lens_id": "STATE-1",
+    "lens": "state",
+    "claim": "Applying a discount to an order that already has a discount must not compound the reduction a second time.",
+    "basis": "no_double_effect",
+    "test_path": "runs/pr-2-discounts/tests/test_state_1.py"
+  },
+  {
+    "id": "F-012",
+    "lens_id": "STATE-2",
+    "lens": "state",
+    "claim": "Attempting to apply a discount to a delivered order must return 400.",
+    "basis": "spec/orders.md#R21",
+    "test_path": "runs/pr-2-discounts/tests/test_state_2.py"
+  },
+  {
+    "id": "F-013",
+    "lens_id": "STATE-3",
+    "lens": "state",
+    "claim": "Attempting to apply a discount to a cancelled order must return 400.",
+    "basis": "spec/orders.md#R21",
+    "test_path": "runs/pr-2-discounts/tests/test_state_3.py"
+  },
+  {
+    "id": "F-014",
+    "lens_id": "STATE-4",
+    "lens": "state",
+    "claim": "The discount_percent recorded on the order must reflect the actual percentage reduction applied to the original order total.",
+    "basis": "spec/orders.md#R21",
+    "test_path": "runs/pr-2-discounts/tests/test_state_4.py"
+  },
+  {
+    "id": "F-015",
+    "lens_id": "STATE-5",
+    "lens": "state",
+    "claim": "Applying a discount to one order must leave every other order's total and discount_percent completely unchanged.",
+    "basis": "spec/orders.md#R21",
+    "test_path": "runs/pr-2-discounts/tests/test_state_5.py"
+  },
+  {
+    "id": "F-016",
+    "lens_id": "SPEC-1",
+    "lens": "spec",
+    "claim": "A discount percentage of 0 is outside the range 1\u201350 and must return 400.",
+    "basis": "spec/orders.md#R24",
+    "test_path": "runs/pr-2-discounts/tests/test_spec_1.py"
+  },
+  {
+    "id": "F-017",
+    "lens_id": "SPEC-2",
+    "lens": "spec",
+    "claim": "A discount percentage of 51 is outside the range 1\u201350 and must return 400.",
+    "basis": "spec/orders.md#R24",
+    "test_path": "runs/pr-2-discounts/tests/test_spec_2.py"
+  },
+  {
+    "id": "F-018",
+    "lens_id": "SPEC-3",
+    "lens": "spec",
+    "claim": "A discount can only be applied by the owner of the order; any other caller must receive 403.",
+    "basis": "spec/orders.md#R22",
+    "test_path": "runs/pr-2-discounts/tests/test_spec_3.py"
+  },
+  {
+    "id": "F-019",
+    "lens_id": "SPEC-4",
+    "lens": "spec",
+    "claim": "A discount percentage of 1 is the minimum valid value and must be accepted with a 200 response.",
+    "basis": "spec/orders.md#R21",
+    "test_path": "runs/pr-2-discounts/tests/test_spec_4.py"
+  },
+  {
+    "id": "F-020",
+    "lens_id": "SPEC-5",
+    "lens": "spec",
+    "claim": "The order total after a discount can never go below 0.",
+    "basis": "spec/orders.md#R23",
+    "test_path": "runs/pr-2-discounts/tests/test_spec_5.py"
+  }
+]

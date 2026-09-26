@@ -8,7 +8,7 @@
 |---|---|
 | Raw suspicions (attacker findings) | 20 |
 | Proven by failing test (all 4 gates) | 2 |
-| Unique bugs (distinct fixes) | 1 |
+| Distinct fixes (root causes fixed) | 1 |
 | Rejected as noise | 18 |
 | Fixed (proof test now passes 3/3) | 2 |
 | Unfixed | 0 |
