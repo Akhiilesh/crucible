@@ -48,6 +48,16 @@ class CreateOrderRequest(BaseModel):
     items: list[OrderItem]
 
 
+class BulkCancelRequest(BaseModel):
+    order_ids: list[str]
+
+
+class BulkCancelResponse(BaseModel):
+    cancelled: list[str]
+    skipped: list[str]
+    cancelled_count: int
+
+
 class OrderResponse(BaseModel):
     id: str
     user_id: str

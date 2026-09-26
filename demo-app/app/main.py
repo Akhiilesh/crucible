@@ -1,4 +1,4 @@
-"""FastAPI orders service — base implementation (no feature branches yet)."""
+"""FastAPI orders service — with bulk-cancel endpoint (pr-3-bulk-cancel)."""
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -7,6 +7,8 @@ from fastapi import FastAPI, Header, HTTPException
 
 import app.store as store
 from app.models import (
+    BulkCancelRequest,
+    BulkCancelResponse,
     CreateOrderRequest,
     Order,
     OrderResponse,
@@ -116,6 +118,43 @@ def deliver_order(
     })
     store.orders[order_id] = updated
     return _order_to_response(updated)
+
+
+@app.post("/orders/bulk-cancel", response_model=BulkCancelResponse)
+def bulk_cancel_orders(
+    body: BulkCancelRequest,
+    x_user_id: str = Header(...),
+) -> BulkCancelResponse:
+    """Cancel multiple placed orders in one request. Restores stock for each."""
+    _require_user(x_user_id)
+
+    if not body.order_ids:
+        raise HTTPException(status_code=400, detail="order_ids must not be empty")
+
+    cancelled: list[str] = []
+    skipped: list[str] = []
+
+    for order_id in body.order_ids:
+        order = store.get_order(order_id)
+        if order is None or order.status != OrderStatus.placed:
+            skipped.append(order_id)
+            continue
+
+        # Restore stock for each item in this order
+        for item in order.items:
+            product = store.products[item.product_id]
+            store.products[item.product_id] = product.model_copy(
+                update={"stock": product.stock + item.qty}
+            )
+
+        store.orders[order_id] = order.model_copy(update={"status": OrderStatus.cancelled})
+        cancelled.append(order_id)
+
+    return BulkCancelResponse(
+        cancelled=cancelled,
+        skipped=skipped,
+        cancelled_count=len(cancelled),
+    )
 
 
 @app.post("/orders/{order_id}/cancel", response_model=OrderResponse)
