@@ -537,3 +537,17 @@ class TestMerge:
             "spec": {"start": "2026-01-01T00:00:40Z", "end": "2026-01-01T00:01:20Z"},
         }, {})
         assert t["mode"] == "sequential"
+
+
+# ── Summary ───────────────────────────────────────────────────────────────────
+
+from crucible.summary import count_numbered_comments  # noqa: E402
+
+
+class TestSummary:
+    def test_counts_numbered_items(self):
+        md = "Intro\n\n1. First\n2. Second\n   continued\n10) Tenth\n- bullet\n"
+        assert count_numbered_comments(md) == 3
+
+    def test_ignores_indented_and_empty(self):
+        assert count_numbered_comments("   1. nested\n1.\n") == 0

@@ -55,5 +55,16 @@ def report(
     typer.echo(f"wrote {md_path.relative_to(_REPO_ROOT)} and {html_path.relative_to(_REPO_ROOT)}")
 
 
+@app.command()
+def summary(
+    runs_dir: str = typer.Option("runs", help="Directory containing one run dir per PR"),
+) -> None:
+    """Write runs/summary.json and runs/summary.md across all PR runs."""
+    from crucible.summary import run_summary
+    path = Path(runs_dir)
+    run_summary(path if path.is_absolute() else _REPO_ROOT / path)
+    typer.echo(f"wrote {runs_dir}/summary.json and {runs_dir}/summary.md")
+
+
 if __name__ == "__main__":
     app()

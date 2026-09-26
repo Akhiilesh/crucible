@@ -1,0 +1,108 @@
+{
+  "prs": [
+    {
+      "pr": "pr-1-refunds",
+      "raw_suspicions": 20,
+      "proven": 2,
+      "rejected": 18,
+      "rejected_by_reason": {
+        "does not fail on PR": 18
+      },
+      "distinct_fixes": 1,
+      "fixed": 2,
+      "unfixed": 0,
+      "precision_pct": 100.0,
+      "suspicions_confirmed_pct": 10.0,
+      "fix_rate_pct": 100.0,
+      "suite_green_after_fix": true,
+      "attack_mode": "parallel",
+      "stage_seconds": {
+        "attack": 46,
+        "verify": 46,
+        "fix": 1,
+        "verify_after_fix": 2
+      },
+      "total_seconds": 95,
+      "baseline_comments": null,
+      "baseline_comments_on_proven_bugs": null,
+      "baseline_precision_pct": null,
+      "proven_findings_seen_by_baseline": null,
+      "baseline_matched_by": null
+    },
+    {
+      "pr": "pr-2-discounts",
+      "raw_suspicions": 20,
+      "proven": 4,
+      "rejected": 16,
+      "rejected_by_reason": {
+        "does not fail on PR": 16
+      },
+      "distinct_fixes": 2,
+      "fixed": 4,
+      "unfixed": 0,
+      "precision_pct": 100.0,
+      "suspicions_confirmed_pct": 20.0,
+      "fix_rate_pct": 100.0,
+      "suite_green_after_fix": true,
+      "attack_mode": "parallel",
+      "stage_seconds": {
+        "intent": 47,
+        "attack": 233,
+        "verify": 10,
+        "fix": 3,
+        "verify_after_fix": 4
+      },
+      "total_seconds": 297,
+      "baseline_comments": null,
+      "baseline_comments_on_proven_bugs": null,
+      "baseline_precision_pct": null,
+      "proven_findings_seen_by_baseline": null,
+      "baseline_matched_by": null
+    },
+    {
+      "pr": "pr-3-bulk-cancel",
+      "raw_suspicions": 20,
+      "proven": 10,
+      "rejected": 10,
+      "rejected_by_reason": {
+        "does not fail on PR": 10
+      },
+      "distinct_fixes": 3,
+      "fixed": 7,
+      "unfixed": 3,
+      "precision_pct": 100.0,
+      "suspicions_confirmed_pct": 50.0,
+      "fix_rate_pct": 70.0,
+      "suite_green_after_fix": true,
+      "attack_mode": "parallel",
+      "stage_seconds": {
+        "intent": 16,
+        "attack": 98,
+        "verify": 15,
+        "fix": 37,
+        "verify_after_fix": 9
+      },
+      "total_seconds": 175,
+      "baseline_comments": null,
+      "baseline_comments_on_proven_bugs": null,
+      "baseline_precision_pct": null,
+      "proven_findings_seen_by_baseline": null,
+      "baseline_matched_by": null
+    }
+  ],
+  "totals": {
+    "raw_suspicions": 60,
+    "proven": 16,
+    "rejected": 44,
+    "distinct_fixes": 6,
+    "fixed": 13,
+    "unfixed": 3,
+    "total_seconds": 567,
+    "baseline_comments": null,
+    "baseline_comments_on_proven_bugs": null,
+    "precision_pct": 100.0,
+    "suspicions_confirmed_pct": 26.7,
+    "fix_rate_pct": 81.2,
+    "baseline_precision_pct": null
+  }
+}
