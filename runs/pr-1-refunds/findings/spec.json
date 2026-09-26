@@ -1,0 +1,37 @@
+[
+  {
+    "id": "SPEC-1",
+    "lens": "spec",
+    "claim": "The 14-day refund window is counted from delivered_at; an order delivered 2 days ago but created 20 days ago must still be refundable.",
+    "basis": "spec/orders.md#R16",
+    "test_path": "runs/pr-1-refunds/tests/test_spec_1.py"
+  },
+  {
+    "id": "SPEC-2",
+    "lens": "spec",
+    "claim": "Refunds are only allowed for orders with status 'delivered'; a placed order must receive 400.",
+    "basis": "spec/orders.md#R15",
+    "test_path": "runs/pr-1-refunds/tests/test_spec_2.py"
+  },
+  {
+    "id": "SPEC-3",
+    "lens": "spec",
+    "claim": "A refund amount greater than the order total must return 400.",
+    "basis": "spec/orders.md#R18",
+    "test_path": "runs/pr-1-refunds/tests/test_spec_3.py"
+  },
+  {
+    "id": "SPEC-4",
+    "lens": "spec",
+    "claim": "A refunded order cannot be refunded again; a second refund request must return 400.",
+    "basis": "spec/orders.md#R19",
+    "test_path": "runs/pr-1-refunds/tests/test_spec_4.py"
+  },
+  {
+    "id": "SPEC-5",
+    "lens": "spec",
+    "claim": "A successful refund returns 200 and sets the order status to 'refunded'.",
+    "basis": "spec/orders.md#R20",
+    "test_path": "runs/pr-1-refunds/tests/test_spec_5.py"
+  }
+]

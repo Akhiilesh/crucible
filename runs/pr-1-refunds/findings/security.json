@@ -1,0 +1,37 @@
+[
+  {
+    "id": "SECURITY-1",
+    "lens": "security",
+    "claim": "A user cannot refund an order belonging to another user; the request must return 403.",
+    "basis": "spec/orders.md#R8",
+    "test_path": "runs/pr-1-refunds/tests/test_security_1.py"
+  },
+  {
+    "id": "SECURITY-2",
+    "lens": "security",
+    "claim": "A refund request with no X-User-Id header must return 401 or 422, never a successful response.",
+    "basis": "no_5xx",
+    "test_path": "runs/pr-1-refunds/tests/test_security_2.py"
+  },
+  {
+    "id": "SECURITY-3",
+    "lens": "security",
+    "claim": "A refund request from an unknown user must return 401.",
+    "basis": "spec/orders.md#R7",
+    "test_path": "runs/pr-1-refunds/tests/test_security_3.py"
+  },
+  {
+    "id": "SECURITY-4",
+    "lens": "security",
+    "claim": "A 403 error response on the refund endpoint must not expose the target order's internal data.",
+    "basis": "no_data_leak",
+    "test_path": "runs/pr-1-refunds/tests/test_security_4.py"
+  },
+  {
+    "id": "SECURITY-5",
+    "lens": "security",
+    "claim": "A user cannot change the status of another user's order by calling the refund endpoint.",
+    "basis": "spec/orders.md#R7",
+    "test_path": "runs/pr-1-refunds/tests/test_security_5.py"
+  }
+]

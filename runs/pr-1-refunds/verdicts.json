@@ -1,0 +1,342 @@
+[
+  {
+    "id": "F-001",
+    "lens_id": "EDGE-1",
+    "lens": "edge",
+    "claim": "A refund request with amount_paise equal to 0 must return 400.",
+    "basis": "spec/orders.md#R18",
+    "test_path": "runs/pr-1-refunds/tests/test_edge_1.py",
+    "gate_results": {
+      "fails_on_pr": false,
+      "blame": null,
+      "repro": null,
+      "grounded": true
+    },
+    "verdict": "REJECTED",
+    "reason": "does not fail on PR",
+    "fix_commit": null
+  },
+  {
+    "id": "F-002",
+    "lens_id": "EDGE-2",
+    "lens": "edge",
+    "claim": "A refund request with amount_paise greater than the order total must return 400.",
+    "basis": "spec/orders.md#R18",
+    "test_path": "runs/pr-1-refunds/tests/test_edge_2.py",
+    "gate_results": {
+      "fails_on_pr": false,
+      "blame": null,
+      "repro": null,
+      "grounded": true
+    },
+    "verdict": "REJECTED",
+    "reason": "does not fail on PR",
+    "fix_commit": null
+  },
+  {
+    "id": "F-003",
+    "lens_id": "EDGE-3",
+    "lens": "edge",
+    "claim": "A refund request made within 14 days of delivered_at must succeed with status 200.",
+    "basis": "spec/orders.md#R16",
+    "test_path": "runs/pr-1-refunds/tests/test_edge_3.py",
+    "gate_results": {
+      "fails_on_pr": false,
+      "blame": null,
+      "repro": null,
+      "grounded": true
+    },
+    "verdict": "REJECTED",
+    "reason": "does not fail on PR",
+    "fix_commit": null
+  },
+  {
+    "id": "F-004",
+    "lens_id": "EDGE-4",
+    "lens": "edge",
+    "claim": "A refund request for a non-existent order ID must return 404.",
+    "basis": "spec/orders.md#R15",
+    "test_path": "runs/pr-1-refunds/tests/test_edge_4.py",
+    "gate_results": {
+      "fails_on_pr": false,
+      "blame": null,
+      "repro": null,
+      "grounded": true
+    },
+    "verdict": "REJECTED",
+    "reason": "does not fail on PR",
+    "fix_commit": null
+  },
+  {
+    "id": "F-005",
+    "lens_id": "EDGE-5",
+    "lens": "edge",
+    "claim": "A refund request with a negative amount_paise must return 400.",
+    "basis": "spec/orders.md#R18",
+    "test_path": "runs/pr-1-refunds/tests/test_edge_5.py",
+    "gate_results": {
+      "fails_on_pr": false,
+      "blame": null,
+      "repro": null,
+      "grounded": true
+    },
+    "verdict": "REJECTED",
+    "reason": "does not fail on PR",
+    "fix_commit": null
+  },
+  {
+    "id": "F-006",
+    "lens_id": "SECURITY-1",
+    "lens": "security",
+    "claim": "A user cannot refund an order belonging to another user; the request must return 403.",
+    "basis": "spec/orders.md#R8",
+    "test_path": "runs/pr-1-refunds/tests/test_security_1.py",
+    "gate_results": {
+      "fails_on_pr": false,
+      "blame": null,
+      "repro": null,
+      "grounded": true
+    },
+    "verdict": "REJECTED",
+    "reason": "does not fail on PR",
+    "fix_commit": null
+  },
+  {
+    "id": "F-007",
+    "lens_id": "SECURITY-2",
+    "lens": "security",
+    "claim": "A refund request with no X-User-Id header must return 401 or 422, never a successful response.",
+    "basis": "no_5xx",
+    "test_path": "runs/pr-1-refunds/tests/test_security_2.py",
+    "gate_results": {
+      "fails_on_pr": false,
+      "blame": null,
+      "repro": null,
+      "grounded": true
+    },
+    "verdict": "REJECTED",
+    "reason": "does not fail on PR",
+    "fix_commit": null
+  },
+  {
+    "id": "F-008",
+    "lens_id": "SECURITY-3",
+    "lens": "security",
+    "claim": "A refund request from an unknown user must return 401.",
+    "basis": "spec/orders.md#R7",
+    "test_path": "runs/pr-1-refunds/tests/test_security_3.py",
+    "gate_results": {
+      "fails_on_pr": false,
+      "blame": null,
+      "repro": null,
+      "grounded": true
+    },
+    "verdict": "REJECTED",
+    "reason": "does not fail on PR",
+    "fix_commit": null
+  },
+  {
+    "id": "F-009",
+    "lens_id": "SECURITY-4",
+    "lens": "security",
+    "claim": "A 403 error response on the refund endpoint must not expose the target order's internal data.",
+    "basis": "no_data_leak",
+    "test_path": "runs/pr-1-refunds/tests/test_security_4.py",
+    "gate_results": {
+      "fails_on_pr": false,
+      "blame": null,
+      "repro": null,
+      "grounded": true
+    },
+    "verdict": "REJECTED",
+    "reason": "does not fail on PR",
+    "fix_commit": null
+  },
+  {
+    "id": "F-010",
+    "lens_id": "SECURITY-5",
+    "lens": "security",
+    "claim": "A user cannot change the status of another user's order by calling the refund endpoint.",
+    "basis": "spec/orders.md#R7",
+    "test_path": "runs/pr-1-refunds/tests/test_security_5.py",
+    "gate_results": {
+      "fails_on_pr": false,
+      "blame": null,
+      "repro": null,
+      "grounded": true
+    },
+    "verdict": "REJECTED",
+    "reason": "does not fail on PR",
+    "fix_commit": null
+  },
+  {
+    "id": "F-011",
+    "lens_id": "STATE-1",
+    "lens": "state",
+    "claim": "A refunded order cannot be refunded again; the second refund request must return 400.",
+    "basis": "spec/orders.md#R19",
+    "test_path": "runs/pr-1-refunds/tests/test_state_1.py",
+    "gate_results": {
+      "fails_on_pr": false,
+      "blame": null,
+      "repro": null,
+      "grounded": true
+    },
+    "verdict": "REJECTED",
+    "reason": "does not fail on PR",
+    "fix_commit": null
+  },
+  {
+    "id": "F-012",
+    "lens_id": "STATE-2",
+    "lens": "state",
+    "claim": "Refunds are only allowed for delivered orders; attempting to refund a placed order must return 400.",
+    "basis": "spec/orders.md#R15",
+    "test_path": "runs/pr-1-refunds/tests/test_state_2.py",
+    "gate_results": {
+      "fails_on_pr": false,
+      "blame": null,
+      "repro": null,
+      "grounded": true
+    },
+    "verdict": "REJECTED",
+    "reason": "does not fail on PR",
+    "fix_commit": null
+  },
+  {
+    "id": "F-013",
+    "lens_id": "STATE-3",
+    "lens": "state",
+    "claim": "Refunds are only allowed for delivered orders; attempting to refund a cancelled order must return 400.",
+    "basis": "spec/orders.md#R15",
+    "test_path": "runs/pr-1-refunds/tests/test_state_3.py",
+    "gate_results": {
+      "fails_on_pr": false,
+      "blame": null,
+      "repro": null,
+      "grounded": true
+    },
+    "verdict": "REJECTED",
+    "reason": "does not fail on PR",
+    "fix_commit": null
+  },
+  {
+    "id": "F-014",
+    "lens_id": "STATE-4",
+    "lens": "state",
+    "claim": "The 14-day refund window is counted from delivered_at; a request more than 14 days after delivered_at must return 400 even if created_at is recent.",
+    "basis": "spec/orders.md#R16",
+    "test_path": "runs/pr-1-refunds/tests/test_state_4.py",
+    "gate_results": {
+      "fails_on_pr": true,
+      "blame": "new_code",
+      "repro": "3/3",
+      "grounded": true
+    },
+    "verdict": "PROVEN",
+    "reason": "",
+    "fix_commit": null
+  },
+  {
+    "id": "F-015",
+    "lens_id": "STATE-5",
+    "lens": "state",
+    "claim": "A successful refund sets the order status to 'refunded' and records the refunded amount.",
+    "basis": "spec/orders.md#R20",
+    "test_path": "runs/pr-1-refunds/tests/test_state_5.py",
+    "gate_results": {
+      "fails_on_pr": false,
+      "blame": null,
+      "repro": null,
+      "grounded": true
+    },
+    "verdict": "REJECTED",
+    "reason": "does not fail on PR",
+    "fix_commit": null
+  },
+  {
+    "id": "F-016",
+    "lens_id": "SPEC-1",
+    "lens": "spec",
+    "claim": "The 14-day refund window is counted from delivered_at; an order delivered 2 days ago but created 20 days ago must still be refundable.",
+    "basis": "spec/orders.md#R16",
+    "test_path": "runs/pr-1-refunds/tests/test_spec_1.py",
+    "gate_results": {
+      "fails_on_pr": true,
+      "blame": "new_code",
+      "repro": "3/3",
+      "grounded": true
+    },
+    "verdict": "PROVEN",
+    "reason": "",
+    "fix_commit": null
+  },
+  {
+    "id": "F-017",
+    "lens_id": "SPEC-2",
+    "lens": "spec",
+    "claim": "Refunds are only allowed for orders with status 'delivered'; a placed order must receive 400.",
+    "basis": "spec/orders.md#R15",
+    "test_path": "runs/pr-1-refunds/tests/test_spec_2.py",
+    "gate_results": {
+      "fails_on_pr": false,
+      "blame": null,
+      "repro": null,
+      "grounded": true
+    },
+    "verdict": "REJECTED",
+    "reason": "does not fail on PR",
+    "fix_commit": null
+  },
+  {
+    "id": "F-018",
+    "lens_id": "SPEC-3",
+    "lens": "spec",
+    "claim": "A refund amount greater than the order total must return 400.",
+    "basis": "spec/orders.md#R18",
+    "test_path": "runs/pr-1-refunds/tests/test_spec_3.py",
+    "gate_results": {
+      "fails_on_pr": false,
+      "blame": null,
+      "repro": null,
+      "grounded": true
+    },
+    "verdict": "REJECTED",
+    "reason": "does not fail on PR",
+    "fix_commit": null
+  },
+  {
+    "id": "F-019",
+    "lens_id": "SPEC-4",
+    "lens": "spec",
+    "claim": "A refunded order cannot be refunded again; a second refund request must return 400.",
+    "basis": "spec/orders.md#R19",
+    "test_path": "runs/pr-1-refunds/tests/test_spec_4.py",
+    "gate_results": {
+      "fails_on_pr": false,
+      "blame": null,
+      "repro": null,
+      "grounded": true
+    },
+    "verdict": "REJECTED",
+    "reason": "does not fail on PR",
+    "fix_commit": null
+  },
+  {
+    "id": "F-020",
+    "lens_id": "SPEC-5",
+    "lens": "spec",
+    "claim": "A successful refund returns 200 and sets the order status to 'refunded'.",
+    "basis": "spec/orders.md#R20",
+    "test_path": "runs/pr-1-refunds/tests/test_spec_5.py",
+    "gate_results": {
+      "fails_on_pr": false,
+      "blame": null,
+      "repro": null,
+      "grounded": true
+    },
+    "verdict": "REJECTED",
+    "reason": "does not fail on PR",
+    "fix_commit": null
+  }
+]

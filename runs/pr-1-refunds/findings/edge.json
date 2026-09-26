@@ -1,0 +1,37 @@
+[
+  {
+    "id": "EDGE-1",
+    "lens": "edge",
+    "claim": "A refund request with amount_paise equal to 0 must return 400.",
+    "basis": "spec/orders.md#R18",
+    "test_path": "runs/pr-1-refunds/tests/test_edge_1.py"
+  },
+  {
+    "id": "EDGE-2",
+    "lens": "edge",
+    "claim": "A refund request with amount_paise greater than the order total must return 400.",
+    "basis": "spec/orders.md#R18",
+    "test_path": "runs/pr-1-refunds/tests/test_edge_2.py"
+  },
+  {
+    "id": "EDGE-3",
+    "lens": "edge",
+    "claim": "A refund request made within 14 days of delivered_at must succeed with status 200.",
+    "basis": "spec/orders.md#R16",
+    "test_path": "runs/pr-1-refunds/tests/test_edge_3.py"
+  },
+  {
+    "id": "EDGE-4",
+    "lens": "edge",
+    "claim": "A refund request for a non-existent order ID must return 404.",
+    "basis": "spec/orders.md#R15",
+    "test_path": "runs/pr-1-refunds/tests/test_edge_4.py"
+  },
+  {
+    "id": "EDGE-5",
+    "lens": "edge",
+    "claim": "A refund request with a negative amount_paise must return 400.",
+    "basis": "spec/orders.md#R18",
+    "test_path": "runs/pr-1-refunds/tests/test_edge_5.py"
+  }
+]

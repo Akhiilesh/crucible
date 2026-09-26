@@ -1,0 +1,40 @@
+{
+  "pr": "pr-1-refunds",
+  "attack": {
+    "mode": "parallel",
+    "start": "2026-09-26T08:49:52Z",
+    "end": "2026-09-26T08:50:38Z",
+    "seconds": 46,
+    "lenses": {
+      "edge": {
+        "start": "2026-09-26T08:49:52Z",
+        "end": "2026-09-26T08:50:36Z",
+        "seconds": 44,
+        "findings": 5
+      },
+      "security": {
+        "start": "2026-09-26T08:49:52Z",
+        "end": "2026-09-26T08:50:38Z",
+        "seconds": 46,
+        "findings": 5
+      },
+      "state": {
+        "start": "2026-09-26T08:49:52Z",
+        "end": "2026-09-26T08:50:38Z",
+        "seconds": 46,
+        "findings": 5
+      },
+      "spec": {
+        "start": "2026-09-26T08:49:52Z",
+        "end": "2026-09-26T08:50:37Z",
+        "seconds": 45,
+        "findings": 5
+      }
+    }
+  },
+  "verify": {
+    "start": "2026-09-26T08:53:19Z",
+    "end": "2026-09-26T08:54:05Z",
+    "seconds": 46
+  }
+}
