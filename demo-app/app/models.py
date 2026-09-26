@@ -49,7 +49,7 @@ class CreateOrderRequest(BaseModel):
 
 
 class BulkCancelRequest(BaseModel):
-    order_ids: list[str]
+    order_ids: list[str] = Field(default_factory=list)
 
 
 class BulkCancelResponse(BaseModel):
