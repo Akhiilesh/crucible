@@ -139,7 +139,7 @@ def bulk_cancel_orders(
     cancelled: list[str] = []
     skipped: list[str] = []
 
-    for order_id in body.order_ids:
+    for order_id in dict.fromkeys(body.order_ids):
         order = store.get_order(order_id)
         if order is None or order.status != OrderStatus.placed:
             skipped.append(order_id)
