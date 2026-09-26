@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crucible · {{ pr }}</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --surface: #ffffff; --surface-2: #f0f0ec; --border: #e2e2dc;
+    --text: #1c1c1a; --muted: #6b6b66; --accent: #3b5bdb;
+    --red: #c92a2a; --red-bg: #fff0f0; --green: #2b8a3e; --green-bg: #ebfbee;
+    --amber: #a86400; --amber-bg: #fff4e0;
+    --code-bg: #f4f4f1; --add-bg: #e6f7ea; --del-bg: #fdeaea; --hunk: #5c6bc0;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141413; --surface: #1d1d1b; --surface-2: #262624; --border: #33332f;
+      --text: #ececea; --muted: #9a9a94; --accent: #8ea4ff;
+      --red: #ff8787; --red-bg: #3a1d1d; --green: #69db7c; --green-bg: #173220;
+      --amber: #ffc078; --amber-bg: #3a2a12;
+      --code-bg: #191918; --add-bg: #173220; --del-bg: #3a1d1d; --hunk: #9fa8ff;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  main { max-width: 960px; margin: 0 auto; padding: 40px 16px 64px; }
+  h1 { font-size: 28px; line-height: 1.2; margin: 4px 0 8px; }
+  h2 { font-size: 19px; margin: 40px 0 14px; }
+  code, pre { font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  h1 code { font-size: .9em; }
+  h1 .vs { color: var(--muted); font-weight: 400; font-size: .7em; margin: 0 4px; }
+  .eyebrow { color: var(--muted); font-size: 13px; letter-spacing: .06em; text-transform: uppercase; }
+  .summary { color: var(--muted); margin: 0; }
+  .summary b { color: var(--text); }
+
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+  .tile { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .tile .v { font-size: 26px; font-weight: 650; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .tile .k { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .tile .s { color: var(--muted); font-size: 12px; }
+  .tile.good .v { color: var(--green); }
+  .tile.bad .v { color: var(--red); }
+
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .stagebar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: var(--surface-2); margin-bottom: 12px; }
+  .stagebar span { display: block; }
+  .stagebar span:nth-child(1) { background: #748ffc; }
+  .stagebar span:nth-child(2) { background: #f59f00; }
+  .stagebar span:nth-child(3) { background: #40c057; }
+  .stagebar span:nth-child(4) { background: #e64980; }
+  .stagebar span:nth-child(5) { background: #15aabf; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 500; }
+  td.num { font-variant-numeric: tabular-nums; }
+  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 16px; }
+  .card-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .id { font-weight: 650; }
+  .pill { font-size: 12px; padding: 2px 9px; border-radius: 999px; background: var(--surface-2); color: var(--muted); }
+  .status { margin-left: auto; font-size: 12px; font-weight: 600; display: flex; gap: 6px; align-items: center; }
+  .red { color: var(--red); background: var(--red-bg); padding: 2px 8px; border-radius: 6px; }
+  .green { color: var(--green); background: var(--green-bg); padding: 2px 8px; border-radius: 6px; }
+  .amber { color: var(--amber); background: var(--amber-bg); padding: 2px 8px; border-radius: 6px; }
+  .claim { font-size: 16px; font-weight: 550; margin: 0 0 10px; }
+  blockquote { margin: 0 0 12px; padding: 8px 12px; border-left: 3px solid var(--accent); background: var(--surface-2); border-radius: 0 6px 6px 0; }
+  blockquote .rule { font-weight: 650; margin-right: 6px; }
+  .meta { color: var(--muted); font-size: 13px; margin: 0 0 10px; }
+  details { margin-top: 8px; }
+  summary { cursor: pointer; color: var(--accent); font-size: 14px; }
+  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; overflow-x: auto; margin: 8px 0 0; }
+  pre.diff { padding: 8px 0; }
+  pre.diff div { padding: 0 12px; white-space: pre; }
+  .d-add { background: var(--add-bg); }
+  .d-del { background: var(--del-bg); }
+  .d-hunk { color: var(--hunk); }
+  .d-meta { color: var(--muted); }
+  .label { font-size: 13px; color: var(--muted); margin: 12px 0 0; }
+
+  .noise-group { margin: 14px 0 4px; font-weight: 600; }
+  .noise-group span { color: var(--muted); font-weight: 400; }
+  ul.noise { margin: 0; padding-left: 18px; }
+  ul.noise li { margin: 4px 0; }
+  ul.noise code { color: var(--muted); }
+  footer { color: var(--muted); font-size: 13px; margin-top: 40px; }
+  @media (max-width: 560px) { .status { margin-left: 0; width: 100%; } h1 { font-size: 23px; } }
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">Crucible report</div>
+  <h1><code>{{ pr }}</code><span class="vs">vs</span><code>{{ base }}</code></h1>
+  <p class="summary">
+    <b>{{ proven }}</b> proven · <b>{{ rejected }}</b> rejected as noise · <b>{{ fixed }}</b> fixed · <b>{{ unfixed }}</b> unfixed
+    {% if total_seconds %} · reviewed in <b>{{ total_seconds | duration }}</b>{% endif %}
+  </p>
+
+  <h2>Scorecard</h2>
+  <div class="tiles">
+    <div class="tile"><div class="v">{{ total }}</div><div class="k">Raw suspicions</div><div class="s">from {{ lenses | length or "all" }} attacker lenses</div></div>
+    <div class="tile good"><div class="v">{{ proven }}</div><div class="k">Proven</div><div class="s">failing test, 4 gates</div></div>
+    <div class="tile"><div class="v">{{ unique_bugs }}</div><div class="k">Unique bugs</div><div class="s">distinct fixes</div></div>
+    <div class="tile"><div class="v">{{ rejected }}</div><div class="k">Noise rejected</div><div class="s">never shown to reviewer</div></div>
+    <div class="tile good"><div class="v">{{ fixed }}</div><div class="k">Fixed</div><div class="s">proof passes 3/3</div></div>
+    <div class="tile {{ 'bad' if unfixed else '' }}"><div class="v">{{ unfixed }}</div><div class="k">Unfixed</div><div class="s">needs a human</div></div>
+    <div class="tile"><div class="v">{{ precision }}</div><div class="k">Precision</div><div class="s">reported findings with proof</div></div>
+    <div class="tile"><div class="v">{{ confirmation_rate }}</div><div class="k">Suspicions confirmed</div><div class="s">{{ proven }} of {{ total }}</div></div>
+  </div>
+  {% if fix_check %}
+  <p class="meta" style="margin-top:12px">Full suite on <code>{{ pr }}@{{ fix_check.pr_sha }}</code> after fixes:
+    <span class="{{ 'green' if fix_check.suite_green else 'red' }}">{{ fix_check.suite_summary }}</span></p>
+  {% endif %}
+
+  {% if stages %}
+  <h2>Time per stage</h2>
+  <div class="panel">
+    <div class="stagebar">
+      {% for s in stages %}<span style="width: {{ (100 * s.seconds / total_seconds) if total_seconds else 0 }}%" title="{{ s.name }}"></span>{% endfor %}
+    </div>
+    <table>
+      <tr><th>Stage</th><th>Seconds</th><th>By</th></tr>
+      {% set colors = ["#748ffc", "#f59f00", "#40c057", "#e64980", "#15aabf"] %}
+      {% for s in stages %}
+      <tr><td><span class="dot" style="background: {{ colors[loop.index0 % 5] }}"></span>{{ s.name }}{% if s.name == "attack" and attack_mode %} <span class="pill">{{ attack_mode }}</span>{% endif %}</td>
+        <td class="num">{{ s.seconds }}</td><td>{{ s.by | default("") }}</td></tr>
+      {% endfor %}
+      <tr><td><b>total</b></td><td class="num"><b>{{ total_seconds }}</b></td><td></td></tr>
+    </table>
+  </div>
+  {% endif %}
+
+  <h2>Proven findings</h2>
+  {% for c in cards %}
+  <article class="card">
+    <div class="card-head">
+      <span class="id">{{ c.id }}</span>
+      <span class="pill">{{ c.lens }}</span>
+      <span class="status">
+        <span class="red">RED {{ c.red }}</span> →
+        {% if c.is_fixed %}<span class="green">GREEN {{ c.green }}</span>{% else %}<span class="amber">UNFIXED</span>{% endif %}
+      </span>
+    </div>
+    <p class="claim">{{ c.claim }}</p>
+    <blockquote><span class="rule">{{ c.basis_label }}</span>{{ c.basis_text or c.basis }}</blockquote>
+    <p class="meta">
+      Fix commit: {% if c.fix_commit %}<code>{{ c.fix_commit }}</code>{% if c.same_fix_as %} — same root cause as {{ c.same_fix_as }}, fixed by the same commit{% endif %}{% else %}none{% endif %}
+      · Blame: {{ c.gate_results.blame }}
+    </p>
+    <details open>
+      <summary>Proof test · <code>{{ c.test_path }}</code></summary>
+      <pre><code>{{ c.test_code | trim }}</code></pre>
+    </details>
+    {% if c.diff_lines %}
+    <p class="label">Fix diff</p>
+    <pre class="diff">{% for kind, line in c.diff_lines %}<div class="d-{{ kind }}">{{ line }}</div>{% endfor %}</pre>
+    {% endif %}
+  </article>
+  {% else %}
+  <p class="meta">No proven findings.</p>
+  {% endfor %}
+
+  <h2>Noise rejected</h2>
+  <div class="panel">
+    <details>
+      <summary>Show {{ rejected }} rejected finding{{ "" if rejected == 1 else "s" }}</summary>
+      {% for reason, items in by_reason %}
+      <div class="noise-group">{{ reason }} <span>({{ items | length }})</span></div>
+      <ul class="noise">
+        {% for v in items %}<li><b>{{ v.id }}</b> · {{ v.lens }} · <code>{{ v.basis }}</code> — {{ v.claim }}</li>{% endfor %}
+      </ul>
+      {% endfor %}
+    </details>
+  </div>
+
+  <footer>Generated by <code>crucible report</code> from verdicts.json, timing.json and fix_check.json. Every number on this page comes from those files.</footer>
+</main>
+</body>
+</html>

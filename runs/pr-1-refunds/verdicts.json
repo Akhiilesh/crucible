@@ -235,7 +235,12 @@
     },
     "verdict": "PROVEN",
     "reason": "",
-    "fix_commit": null
+    "fix_commit": "14f2146",
+    "after_fix": {
+      "passes": true,
+      "runs": "3/3",
+      "pr_sha": "0804c3e"
+    }
   },
   {
     "id": "F-015",
@@ -269,7 +274,12 @@
     },
     "verdict": "PROVEN",
     "reason": "",
-    "fix_commit": null
+    "fix_commit": "14f2146",
+    "after_fix": {
+      "passes": true,
+      "runs": "3/3",
+      "pr_sha": "0804c3e"
+    }
   },
   {
     "id": "F-017",

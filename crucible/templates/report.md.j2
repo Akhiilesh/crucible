@@ -1,0 +1,81 @@
+# Crucible report — `{{ pr }}`
+
+**{{ proven }} proven** · **{{ rejected }} rejected** · {{ fixed }} fixed · {{ unfixed }} unfixed{% if total_seconds %} · reviewed in **{{ total_seconds | duration }}**{% endif %}
+
+
+## Scorecard
+
+| Metric | Value |
+|---|---|
+| Raw suspicions (attacker findings) | {{ total }} |
+| Proven by failing test (all 4 gates) | {{ proven }} |
+| Unique bugs (distinct fixes) | {{ unique_bugs }} |
+| Rejected as noise | {{ rejected }} |
+| Fixed (proof test now passes 3/3) | {{ fixed }} |
+| Unfixed | {{ unfixed }} |
+| Precision of reported findings | {{ precision }} ({{ proven }} of {{ proven }} carry a failing proof test) |
+| Suspicions confirmed | {{ confirmation_rate }} ({{ proven }} of {{ total }}) |
+{% if fix_check %}
+| Full suite after fixes | {{ "green" if fix_check.suite_green else "RED" }} — {{ fix_check.suite_summary }} (`{{ fix_check.pr_sha }}`) |
+{% endif %}
+
+{% if stages %}
+### Time per stage
+
+| Stage | Seconds | By |
+|---|---|---|
+{% for s in stages %}
+| {{ s.name }} | {{ s.seconds }} | {{ s.by | default("") }} |
+{% endfor %}
+| **total** | **{{ total_seconds }}** | |
+{% if attack_mode %}
+
+Attack mode: **{{ attack_mode }}** ({{ lenses | length }} lenses).
+{% endif %}
+{% endif %}
+
+## Proven findings
+
+{% for c in cards %}
+### {{ c.id }} · {{ c.lens }} — {{ c.claim }}
+
+- **Basis:** `{{ c.basis }}`{% if c.basis_text %} — "{{ c.basis_text }}"{% endif %}
+
+- **Red → green:** fails on PR {{ c.red }}{% if c.green %} → passes after fix {{ c.green }}{% else %} → not fixed{% endif %}
+
+- **Fix commit:** {% if c.fix_commit %}`{{ c.fix_commit }}`{% if c.same_fix_as %} (same root cause as {{ c.same_fix_as }}){% endif %}{% else %}none{% endif %}
+
+
+<details><summary>Proof test ({{ c.test_path }})</summary>
+
+```python
+{{ c.test_code | trim }}
+```
+
+</details>
+
+{% if c.diff_lines %}
+```diff
+{% for kind, line in c.diff_lines %}
+{{ line }}
+{% endfor %}
+```
+{% endif %}
+
+{% else %}
+_No proven findings._
+
+{% endfor %}
+## Noise rejected ({{ rejected }})
+
+<details><summary>Show rejected findings</summary>
+
+{% for reason, items in by_reason %}
+**{{ reason }}** ({{ items | length }})
+
+{% for v in items %}
+- {{ v.id }} · {{ v.lens }} · `{{ v.basis }}` — {{ v.claim }}
+{% endfor %}
+
+{% endfor %}
+</details>

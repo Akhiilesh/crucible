@@ -38,9 +38,12 @@ def verify(
 @app.command()
 def report(
     run_dir: str = typer.Option(..., help="Directory containing verdicts.json"),
+    base: str = typer.Option("main", help="Base branch the spec is read from"),
 ) -> None:
     """Generate report.md and report.html from a completed verification run."""
-    typer.echo("report: not implemented yet")
+    from crucible.report import build_report
+    md_path, html_path = build_report(Path(run_dir), _REPO_ROOT, base)
+    typer.echo(f"wrote {md_path.relative_to(_REPO_ROOT)} and {html_path.relative_to(_REPO_ROOT)}")
 
 
 if __name__ == "__main__":
