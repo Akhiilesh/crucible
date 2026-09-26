@@ -1,0 +1,32 @@
+[
+  {
+    "behaviour": "Refunds are only allowed for orders with status 'delivered'; any other status must return 400.",
+    "rule_id": "R15",
+    "endpoints": ["POST /orders/{order_id}/refund"]
+  },
+  {
+    "behaviour": "The refund window is 14 days counted from delivered_at, not created_at; a request more than 14 days after delivered_at must return 400.",
+    "rule_id": "R16",
+    "endpoints": ["POST /orders/{order_id}/refund"]
+  },
+  {
+    "behaviour": "A refund request outside the 14-day window from delivered_at must return 400.",
+    "rule_id": "R17",
+    "endpoints": ["POST /orders/{order_id}/refund"]
+  },
+  {
+    "behaviour": "The refund amount must be greater than 0 and at most the order total; any other value must return 400.",
+    "rule_id": "R18",
+    "endpoints": ["POST /orders/{order_id}/refund"]
+  },
+  {
+    "behaviour": "A refunded order cannot be refunded again; a second refund request must return 400.",
+    "rule_id": "R19",
+    "endpoints": ["POST /orders/{order_id}/refund"]
+  },
+  {
+    "behaviour": "A successful refund sets the order status to 'refunded' and returns 200.",
+    "rule_id": "R20",
+    "endpoints": ["POST /orders/{order_id}/refund"]
+  }
+]
