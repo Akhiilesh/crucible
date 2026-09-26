@@ -132,7 +132,7 @@ def refund_order(
     if order.status != OrderStatus.delivered:
         raise HTTPException(status_code=400, detail="Only delivered orders can be refunded")
 
-    window_start = order.created_at
+    window_start = order.delivered_at
     if datetime.now(tz=timezone.utc) - window_start > timedelta(days=14):
         raise HTTPException(status_code=400, detail="Refund window has expired")
 
