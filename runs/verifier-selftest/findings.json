@@ -1,0 +1,30 @@
+[
+  {
+    "id": "F-001",
+    "lens": "spec",
+    "claim": "Refund window is counted from created_at; spec R16 requires delivered_at",
+    "basis": "spec/orders.md#R16",
+    "test_path": "runs/verifier-selftest/tests/test_f001.py"
+  },
+  {
+    "id": "F-002",
+    "lens": "spec",
+    "claim": "Placed orders can be refunded (wrong expectation)",
+    "basis": "spec/orders.md#R99",
+    "test_path": "runs/verifier-selftest/tests/test_f002.py"
+  },
+  {
+    "id": "F-003",
+    "lens": "edge",
+    "claim": "Broken test — imports nonexistent module",
+    "basis": "spec/orders.md#R15",
+    "test_path": "runs/verifier-selftest/tests/test_f003.py"
+  },
+  {
+    "id": "F-004",
+    "lens": "edge",
+    "claim": "qty=0 should return 400 (pre-existing: actually returns 422 on both branches)",
+    "basis": "spec/orders.md#R2",
+    "test_path": "runs/verifier-selftest/tests/test_f004.py"
+  }
+]

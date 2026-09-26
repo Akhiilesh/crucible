@@ -1,4 +1,8 @@
 """Crucible CLI — proof-carrying code review."""
+from __future__ import annotations
+
+from pathlib import Path
+
 import typer
 
 app = typer.Typer(
@@ -6,6 +10,9 @@ app = typer.Typer(
     help="Crucible: prove bugs with failing tests, then fix them.",
     no_args_is_help=True,
 )
+
+# Repo root is two levels up from this file: crucible/crucible/cli.py → crucible/
+_REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
 @app.command()
@@ -16,7 +23,8 @@ def verify(
     keep: bool = typer.Option(False, help="Keep git worktrees after verification"),
 ) -> None:
     """Run proof gates on all findings in a run directory."""
-    typer.echo("verify: not implemented yet")
+    from crucible.verify import run_verification
+    run_verification(pr, base, Path(run_dir), _REPO_ROOT, keep)
 
 
 @app.command()

@@ -24,6 +24,7 @@ htmlcov/
 
 # Crucible runtime
 runs/*/worktrees/
+runs/*/junit/
 
 # IDE
 .vscode/
