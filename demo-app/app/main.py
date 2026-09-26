@@ -126,10 +126,15 @@ def bulk_cancel_orders(
     x_user_id: str = Header(...),
 ) -> BulkCancelResponse:
     """Cancel multiple placed orders in one request. Restores stock for each."""
-    _require_user(x_user_id)
+    user_id = _require_user(x_user_id)
 
     if not body.order_ids:
         raise HTTPException(status_code=400, detail="order_ids must not be empty")
+
+    for order_id in body.order_ids:
+        order = store.get_order(order_id)
+        if order is not None and order.user_id != user_id:
+            raise HTTPException(status_code=403, detail="Forbidden")
 
     cancelled: list[str] = []
     skipped: list[str] = []
