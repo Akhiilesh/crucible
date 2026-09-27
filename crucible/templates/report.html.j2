@@ -97,7 +97,7 @@
   <div class="eyebrow">Crucible report</div>
   <h1><code>{{ pr }}</code><span class="vs">vs</span><code>{{ base }}</code></h1>
   <p class="summary">
-    <b>{{ proven }}</b> proven · <b>{{ rejected }}</b> rejected as noise · <b>{{ fixed }}</b> fixed · <b>{{ unfixed }}</b> unfixed
+    <b>{{ proven }}</b> proven · <b>{{ rejected }}</b> rejected as noise{% if fix_ran %} · <b>{{ fixed }}</b> fixed · <b>{{ unfixed }}</b> unfixed{% endif %}
     {% if total_seconds %} · reviewed in <b>{{ total_seconds | duration }}</b>{% endif %}
   </p>
 
@@ -105,10 +105,12 @@
   <div class="tiles">
     <div class="tile"><div class="v">{{ total }}</div><div class="k">Raw suspicions</div><div class="s">from {{ lenses | length or "all" }} attacker lenses</div></div>
     <div class="tile good"><div class="v">{{ proven }}</div><div class="k">Proven</div><div class="s">failing test, 4 gates</div></div>
-    <div class="tile"><div class="v">{{ distinct_fixes }}</div><div class="k">Distinct fixes</div><div class="s">root causes fixed</div></div>
+    {% if fix_ran %}<div class="tile"><div class="v">{{ distinct_fixes }}</div><div class="k">Distinct fixes</div><div class="s">root causes fixed</div></div>{% endif %}
     <div class="tile"><div class="v">{{ rejected }}</div><div class="k">Noise rejected</div><div class="s">never shown to reviewer</div></div>
+    {% if fix_ran %}
     <div class="tile good"><div class="v">{{ fixed }}</div><div class="k">Fixed</div><div class="s">proof passes 3/3</div></div>
     <div class="tile {{ 'bad' if unfixed else '' }}"><div class="v">{{ unfixed }}</div><div class="k">Unfixed</div><div class="s">needs a human</div></div>
+    {% endif %}
     <div class="tile"><div class="v">{{ precision }}</div><div class="k">Precision</div><div class="s">reported findings with proof</div></div>
     <div class="tile"><div class="v">{{ confirmation_rate }}</div><div class="k">Suspicions confirmed</div><div class="s">{{ proven }} of {{ total }}</div></div>
   </div>
@@ -143,7 +145,7 @@
       <span class="pill">{{ c.lens }}</span>
       <span class="status">
         <span class="red">RED {{ c.red }}</span> →
-        {% if c.is_fixed %}<span class="green">GREEN {{ c.green }}</span>{% else %}<span class="amber">UNFIXED</span>{% endif %}
+        {% if c.is_fixed %}<span class="green">GREEN {{ c.green }}</span>{% elif fix_ran %}<span class="amber">UNFIXED</span>{% else %}<span class="pill">fix not run yet</span>{% endif %}
       </span>
     </div>
     <p class="claim">{{ c.claim }}</p>

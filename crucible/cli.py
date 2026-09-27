@@ -56,6 +56,14 @@ def report(
 
 
 @app.command()
+def serve(port: int = typer.Option(8765, help="Port on 127.0.0.1")) -> None:
+    """Start the local web app: upload a repo, pick base and PR, verify Bob's findings."""
+    from crucible.server import serve as run_server
+    typer.echo(f"Crucible running at http://127.0.0.1:{port}")
+    run_server(port)
+
+
+@app.command()
 def summary(
     runs_dir: str = typer.Option("runs", help="Directory containing one run dir per PR"),
 ) -> None:

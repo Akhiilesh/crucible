@@ -145,6 +145,24 @@ python3 -m venv .venv && .venv/bin/pip install -e .      # Python 3.11+
 .venv/bin/python scripts/build_dashboard.py
 ```
 
+### Web app: check a pull request in the browser
+
+```bash
+.venv/bin/python -m crucible.cli serve       # open http://127.0.0.1:8765
+```
+
+1. **Upload** a git repository as a `.zip` (including its `.git` folder), pick a folder, or give a path on this machine.
+2. **Choose** the base branch, the PR branch and IBM Bob's attacker output (`runs/<pr>/findings/`).
+3. **Run proof gates.** Crucible runs every test through G1–G4 and shows the proven findings, the rejected noise, a live log and the full report.
+
+Try it on this repo: load it by path, then choose `main`, `pr-2-discounts-original` and `runs/pr-2-discounts`.
+You should get 4 proven and 16 rejected.
+
+This mode is verify-only. The attack tests come from IBM Bob following `.bob/playbook/`, and the web app
+never calls an AI. It runs the repo's tests on your machine and only listens on 127.0.0.1. A project
+that is not laid out like `demo-app/` can describe its layout in a `crucible.toml`
+(see `crucible/layout.py`).
+
 ## 8. Limitations
 
 - **Scope:** Python and pytest only. Demonstrated on a small FastAPI sample app, with **bugs planted

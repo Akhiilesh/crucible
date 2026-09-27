@@ -32,3 +32,6 @@ runs/*/junit/
 
 # macOS
 .DS_Store
+
+# Crucible web app uploads
+.crucible-work/
