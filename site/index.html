@@ -94,8 +94,8 @@
   <nav>
     <span class="brand">Crucible</span>
     <span class="spacer"></span>
-    {% if static %}<a href="#try">Try it</a>{% else %}<a href="#check">Check a PR</a>{% endif %}
-    {% if repo_url %}<a href="{{ repo_url }}">GitHub</a>{% endif %}
+    <a href="#try">Try it</a>
+    
     <a href="/dashboard/">Results dashboard</a>
   </nav>
 
@@ -107,18 +107,18 @@
       deterministic verifier decides.</p>
   </section>
 
-  {% if totals %}
+  
   <h2>Results on the demo: 3 pull requests</h2>
   <div class="tiles">
-    <div class="tile"><div class="v">{{ totals.raw_suspicions }}</div><div class="k">Suspicions raised by Bob</div></div>
-    <div class="tile good"><div class="v">{{ totals.proven }}</div><div class="k">Proven by a failing test</div></div>
-    <div class="tile"><div class="v">{{ totals.rejected }}</div><div class="k">Noise filtered out</div></div>
-    <div class="tile good"><div class="v">{{ totals.fixed }}</div><div class="k">Fixed, red → green</div></div>
-    <div class="tile {{ 'warn' if totals.unfixed else '' }}"><div class="v">{{ totals.unfixed }}</div><div class="k">Flagged for a human</div></div>
-    <div class="tile"><div class="v">{{ totals.precision_pct | int }}%</div><div class="k">Reported findings with proof</div></div>
+    <div class="tile"><div class="v">60</div><div class="k">Suspicions raised by Bob</div></div>
+    <div class="tile good"><div class="v">16</div><div class="k">Proven by a failing test</div></div>
+    <div class="tile"><div class="v">44</div><div class="k">Noise filtered out</div></div>
+    <div class="tile good"><div class="v">13</div><div class="k">Fixed, red → green</div></div>
+    <div class="tile warn"><div class="v">3</div><div class="k">Flagged for a human</div></div>
+    <div class="tile"><div class="v">100%</div><div class="k">Reported findings with proof</div></div>
   </div>
   <p class="more"><a href="/dashboard/">See every finding, proof test and fix →</a></p>
-  {% endif %}
+  
 
   <h2>How it works</h2>
   <div class="steps">
@@ -134,7 +134,7 @@
       <div class="d">Each proven bug with its rule, proof test, fix and red → green status.</div><span class="who cli">Crucible CLI</span></div>
   </div>
 
-  {% if static %}
+  
   <h2 id="try">Try it yourself</h2>
   <div class="panel">
     <div class="stage">
@@ -143,12 +143,12 @@
         and IBM Bob's attacker output for each one.</p>
       <div class="row" style="margin-top:12px">
         <a href="/examples/orders-service-demo.zip" download><button class="primary">Download demo repo (.zip)</button></a>
-        {% if repo_url %}<a href="{{ repo_url }}"><button>View source on GitHub</button></a>{% endif %}
+        
       </div>
     </div>
     <div class="stage">
       <h3><span>2</span>Run the web app on your machine</h3>
-<pre class="log">git clone {{ repo_url or "<this repo>" }} crucible && cd crucible
+<pre class="log">git clone &lt;this repo&gt; crucible && cd crucible
 python3 -m venv .venv && .venv/bin/pip install -e .
 .venv/bin/python -m crucible.cli serve        # opens on http://127.0.0.1:8765</pre>
       <p class="note">Upload the demo .zip, choose base <code>main</code>, a PR branch and its <code>runs/&lt;pr&gt;</code> folder,
@@ -166,162 +166,12 @@ python3 -m venv .venv && .venv/bin/pip install -e .
         but not on a public server, so this site is a read-only showcase of real results.</p>
     </div>
   </div>
-  {% else %}
-  <h2 id="check">Check a pull request</h2>
-  <div class="panel">
-    <div class="stage">
-      <h3><span>1</span>Upload a git repository</h3>
-      <div class="drop" id="drop">Drop a <b>.zip</b> of the repo here (include the hidden <code>.git</code> folder)<br><br>
-        <button id="pickZip">Choose .zip</button>
-        <button id="pickFolder">Choose folder</button>
-        <input type="file" id="zipInput" accept=".zip" class="hidden">
-        <input type="file" id="folderInput" webkitdirectory multiple class="hidden">
-      </div>
-      <div class="or">or use a repository on this machine</div>
-      <div class="row">
-        <label>Path<input type="text" id="localPath" placeholder="/path/to/repo"></label>
-        <button id="loadLocal">Load</button>
-      </div>
-      <div class="msg" id="uploadMsg"></div>
-      <p class="note">The repo needs a base branch, a PR branch, and IBM Bob's attacker output from the
-        <code>.bob/playbook/</code>: <code>runs/&lt;pr&gt;/findings/&lt;lens&gt;.json</code> plus the tests they point to.
-        Crucible runs those tests on this machine, so only upload code you trust.</p>
-    </div>
-
-    <div class="stage hidden" id="configStage">
-      <h3><span>2</span>Choose what to verify</h3>
-      <div class="row">
-        <label>Base branch<select id="base"></select></label>
-        <label>Pull request branch<select id="pr"></select></label>
-        <label>Bob's attacker output<select id="runDir"></select></label>
-      </div>
-      <details>
-        <summary>Project layout (from crucible.toml, or the defaults)</summary>
-        <div class="row" style="margin-top:10px">
-          <label>Project dir<input type="text" id="project_dir"></label>
-          <label>App code dir<input type="text" id="app_dir"></label>
-          <label>Tests dir<input type="text" id="tests_dir"></label>
-          <label>Spec file<input type="text" id="spec_file"></label>
-        </div>
-      </details>
-      <div style="margin-top:14px"><button class="primary" id="run">Run proof gates</button></div>
-    </div>
-
-    <div class="stage hidden" id="runStage">
-      <h3><span>3</span>Verification</h3>
-      <div class="msg" id="runMsg"></div>
-      <div id="results" class="hidden">
-        <div class="tiles">
-          <div class="tile"><div class="v" id="rTotal"></div><div class="k">Suspicions</div></div>
-          <div class="tile good"><div class="v" id="rProven"></div><div class="k">Proven</div></div>
-          <div class="tile"><div class="v" id="rRejected"></div><div class="k">Rejected as noise</div></div>
-        </div>
-        <p class="more"><a id="reportLink" target="_blank" href="#">Open the full report →</a></p>
-        <table id="verdicts"><thead><tr><th>ID</th><th>Lens</th><th>Claim</th><th>Basis</th><th>Verdict</th></tr></thead><tbody></tbody></table>
-      </div>
-      <details open><summary>Live log</summary><pre class="log" id="log"></pre></details>
-    </div>
-  </div>
-
-  {% endif %}
+  
 
   <footer>Crucible · IBM Bob 2.0 Hackathon. Bugs in the demo were planted in a sample FastAPI app.
-    {% if static %}Every number on this site comes from the run files in the repository.{% else %}Runs locally on 127.0.0.1.{% endif %}</footer>
+    Every number on this site comes from the run files in the repository.</footer>
 </main>
 
-{% if not static %}
-<script>
-const $ = (id) => document.getElementById(id);
-let upload = null;
 
-function setMsg(el, text, kind) { el.textContent = text; el.className = "msg " + (kind || ""); }
-
-async function send(url, options) {
-  const r = await fetch(url, options);
-  const body = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(body.detail || r.statusText);
-  return body;
-}
-
-function fill(select, values, chosen) {
-  select.innerHTML = values.map(v => `<option${v === chosen ? " selected" : ""}>${v}</option>`).join("");
-}
-
-function showRepo(info) {
-  upload = info;
-  setMsg($("uploadMsg"), `Loaded ${info.name}: ${info.refs.length} branches/tags, ${info.run_dirs.length} attacker output folder(s).`, "ok");
-  const prGuess = info.refs.find(r => r.endsWith("-original")) || info.refs.find(r => r !== info.base_guess && /pr|feature/i.test(r)) || info.refs.find(r => r !== info.base_guess);
-  fill($("base"), info.refs, info.base_guess);
-  fill($("pr"), info.refs, prGuess);
-  fill($("runDir"), info.run_dirs, info.run_dirs.find(d => prGuess && d.includes(prGuess.replace(/-original$/, ""))) || info.run_dirs[0]);
-  for (const k of ["project_dir", "app_dir", "tests_dir", "spec_file"]) $(k).value = info.layout[k];
-  $("configStage").classList.remove("hidden");
-  if (!info.run_dirs.length) setMsg($("uploadMsg"), "No attacker output found (runs/<pr>/findings/). Run the Bob attack playbook first.", "err");
-}
-
-async function uploadFiles(files, folder) {
-  const fd = new FormData();
-  for (const f of files) {
-    fd.append("files", f);
-    if (folder) fd.append("paths", f.webkitRelativePath);
-  }
-  setMsg($("uploadMsg"), `Uploading ${files.length} file(s)…`);
-  try { showRepo(await send("/api/upload", { method: "POST", body: fd })); }
-  catch (e) { setMsg($("uploadMsg"), e.message, "err"); }
-}
-
-$("pickZip").onclick = () => $("zipInput").click();
-$("pickFolder").onclick = () => $("folderInput").click();
-$("zipInput").onchange = (e) => e.target.files.length && uploadFiles(e.target.files, false);
-$("folderInput").onchange = (e) => e.target.files.length && uploadFiles(e.target.files, true);
-const drop = $("drop");
-drop.ondragover = (e) => { e.preventDefault(); drop.classList.add("over"); };
-drop.ondragleave = () => drop.classList.remove("over");
-drop.ondrop = (e) => { e.preventDefault(); drop.classList.remove("over"); if (e.dataTransfer.files.length) uploadFiles(e.dataTransfer.files, false); };
-
-$("loadLocal").onclick = async () => {
-  setMsg($("uploadMsg"), "Copying repository…");
-  try { showRepo(await send("/api/local", { method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ path: $("localPath").value }) })); }
-  catch (e) { setMsg($("uploadMsg"), e.message, "err"); }
-};
-
-function renderResults(res, reportUrl) {
-  $("rTotal").textContent = res.total; $("rProven").textContent = res.proven; $("rRejected").textContent = res.rejected;
-  $("reportLink").href = reportUrl;
-  const esc = (s) => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-  $("verdicts").querySelector("tbody").innerHTML = res.verdicts
-    .sort((a, b) => (a.verdict === "PROVEN" ? 0 : 1) - (b.verdict === "PROVEN" ? 0 : 1))
-    .map(v => `<tr><td><b>${esc(v.id)}</b></td><td>${esc(v.lens)}</td><td>${esc(v.claim)}</td>
-      <td><code>${esc(v.basis)}</code></td>
-      <td>${v.verdict === "PROVEN" ? '<span class="pill proven">PROVEN</span>'
-          : `<span class="pill rejected">REJECTED</span> <span class="note">${esc(v.reason)}</span>`}</td></tr>`).join("");
-  $("results").classList.remove("hidden");
-}
-
-$("run").onclick = async () => {
-  if (!upload) return;
-  $("run").disabled = true;
-  $("runStage").classList.remove("hidden");
-  $("results").classList.add("hidden");
-  $("log").textContent = "";
-  setMsg($("runMsg"), "Running proof gates: each test runs on the PR (3×) and on the base branch…");
-  const layout = {};
-  for (const k of ["project_dir", "app_dir", "tests_dir", "spec_file"]) layout[k] = $(k).value;
-  try {
-    const { job_id } = await send("/api/jobs", { method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ upload_id: upload.upload_id, base: $("base").value, pr: $("pr").value, run_dir: $("runDir").value, layout }) });
-    const poll = async () => {
-      const j = await send(`/api/jobs/${job_id}`);
-      $("log").textContent = j.log; $("log").scrollTop = $("log").scrollHeight;
-      if (j.status === "done") { setMsg($("runMsg"), "Done.", "ok"); renderResults(j.result, j.report_url); $("run").disabled = false; }
-      else if (j.status === "failed") { setMsg($("runMsg"), j.error, "err"); $("run").disabled = false; }
-      else setTimeout(poll, 1000);
-    };
-    poll();
-  } catch (e) { setMsg($("runMsg"), e.message, "err"); $("run").disabled = false; }
-};
-</script>
-{% endif %}
 </body>
 </html>

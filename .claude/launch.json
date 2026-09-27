@@ -4,8 +4,26 @@
     {
       "name": "crucible",
       "runtimeExecutable": ".venv/bin/python",
-      "runtimeArgs": ["-m", "crucible.cli", "serve", "--port", "8765"],
+      "runtimeArgs": [
+        "-m",
+        "crucible.cli",
+        "serve",
+        "--port",
+        "8765"
+      ],
       "port": 8765
+    },
+    {
+      "name": "site",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "--yes",
+        "serve",
+        "site",
+        "-l",
+        "4173"
+      ],
+      "port": 4173
     }
   ]
 }

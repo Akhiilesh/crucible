@@ -170,6 +170,17 @@ never calls an AI. It runs the repo's tests on your machine and only listens on 
 that is not laid out like `demo-app/` can describe its layout in a `crucible.toml`
 (see `crucible/layout.py`).
 
+### Static showcase site (Vercel)
+
+`site/` is a read-only build of the landing page, the dashboard, the three PR reports and the demo zip:
+
+```bash
+.venv/bin/python scripts/build_site.py --repo-url https://github.com/<user>/crucible
+vercel --prod        # vercel.json serves site/ as static files; .vercelignore uploads only site/
+```
+
+The upload web app is not deployed publicly, because it runs the uploaded repository's tests. Run it locally with `crucible serve`.
+
 ## 8. Limitations
 
 - **Scope:** Python and pytest only. Demonstrated on a small FastAPI sample app, with **bugs planted

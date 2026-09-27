@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crucible · pr-2-discounts</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --surface: #ffffff; --surface-2: #f0f0ec; --border: #e2e2dc;
+    --text: #1c1c1a; --muted: #6b6b66; --accent: #3b5bdb;
+    --red: #c92a2a; --red-bg: #fff0f0; --green: #2b8a3e; --green-bg: #ebfbee;
+    --amber: #a86400; --amber-bg: #fff4e0;
+    --code-bg: #f4f4f1; --add-bg: #e6f7ea; --del-bg: #fdeaea; --hunk: #5c6bc0;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141413; --surface: #1d1d1b; --surface-2: #262624; --border: #33332f;
+      --text: #ececea; --muted: #9a9a94; --accent: #8ea4ff;
+      --red: #ff8787; --red-bg: #3a1d1d; --green: #69db7c; --green-bg: #173220;
+      --amber: #ffc078; --amber-bg: #3a2a12;
+      --code-bg: #191918; --add-bg: #173220; --del-bg: #3a1d1d; --hunk: #9fa8ff;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  main { max-width: 960px; margin: 0 auto; padding: 40px 16px 64px; }
+  h1 { font-size: 28px; line-height: 1.2; margin: 4px 0 8px; }
+  h2 { font-size: 19px; margin: 40px 0 14px; }
+  code, pre { font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  h1 code { font-size: .9em; }
+  h1 .vs { color: var(--muted); font-weight: 400; font-size: .7em; margin: 0 4px; }
+  .eyebrow { color: var(--muted); font-size: 13px; letter-spacing: .06em; text-transform: uppercase; }
+  .summary { color: var(--muted); margin: 0; }
+  .summary b { color: var(--text); }
+
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+  .tile { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .tile .v { font-size: 26px; font-weight: 650; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .tile .k { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .tile .s { color: var(--muted); font-size: 12px; }
+  .tile.good .v { color: var(--green); }
+  .tile.bad .v { color: var(--red); }
+
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .stagebar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: var(--surface-2); margin-bottom: 12px; }
+  .stagebar span { display: block; }
+  .stagebar span:nth-child(1) { background: #748ffc; }
+  .stagebar span:nth-child(2) { background: #f59f00; }
+  .stagebar span:nth-child(3) { background: #40c057; }
+  .stagebar span:nth-child(4) { background: #e64980; }
+  .stagebar span:nth-child(5) { background: #15aabf; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 500; }
+  td.num { font-variant-numeric: tabular-nums; }
+  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 16px; }
+  .card-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .id { font-weight: 650; }
+  .pill { font-size: 12px; padding: 2px 9px; border-radius: 999px; background: var(--surface-2); color: var(--muted); }
+  .status { margin-left: auto; font-size: 12px; font-weight: 600; display: flex; gap: 6px; align-items: center; }
+  .red { color: var(--red); background: var(--red-bg); padding: 2px 8px; border-radius: 6px; }
+  .green { color: var(--green); background: var(--green-bg); padding: 2px 8px; border-radius: 6px; }
+  .amber { color: var(--amber); background: var(--amber-bg); padding: 2px 8px; border-radius: 6px; }
+  .claim { font-size: 16px; font-weight: 550; margin: 0 0 10px; }
+  blockquote { margin: 0 0 12px; padding: 8px 12px; border-left: 3px solid var(--accent); background: var(--surface-2); border-radius: 0 6px 6px 0; }
+  blockquote .rule { font-weight: 650; margin-right: 6px; }
+  .meta { color: var(--muted); font-size: 13px; margin: 0 0 10px; }
+  details { margin-top: 8px; }
+  summary { cursor: pointer; color: var(--accent); font-size: 14px; }
+  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; overflow-x: auto; margin: 8px 0 0; }
+  pre.diff { padding: 8px 0; }
+  pre.diff div { padding: 0 12px; white-space: pre; }
+  .d-add { background: var(--add-bg); }
+  .d-del { background: var(--del-bg); }
+  .d-hunk { color: var(--hunk); }
+  .d-meta { color: var(--muted); }
+  .label { font-size: 13px; color: var(--muted); margin: 12px 0 0; }
+
+  .noise-group { margin: 14px 0 4px; font-weight: 600; }
+  .noise-group span { color: var(--muted); font-weight: 400; }
+  ul.noise { margin: 0; padding-left: 18px; }
+  ul.noise li { margin: 4px 0; }
+  ul.noise code { color: var(--muted); }
+  footer { color: var(--muted); font-size: 13px; margin-top: 40px; }
+  @media (max-width: 560px) { .status { margin-left: 0; width: 100%; } h1 { font-size: 23px; } }
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">Crucible report</div>
+  <h1><code>pr-2-discounts</code><span class="vs">vs</span><code>main</code></h1>
+  <p class="summary">
+    <b>4</b> proven · <b>16</b> rejected as noise · <b>4</b> fixed · <b>0</b> unfixed · reviewed in <b>4m 57s</b>  </p>
+
+  <h2>Scorecard</h2>
+  <div class="tiles">
+    <div class="tile"><div class="v">20</div><div class="k">Raw suspicions</div><div class="s">from 4 attacker lenses</div></div>
+    <div class="tile good"><div class="v">4</div><div class="k">Proven</div><div class="s">failing test, 4 gates</div></div>
+<div class="tile"><div class="v">2</div><div class="k">Distinct fixes</div><div class="s">root causes fixed</div></div>    <div class="tile"><div class="v">16</div><div class="k">Noise rejected</div><div class="s">never shown to reviewer</div></div>
+    <div class="tile good"><div class="v">4</div><div class="k">Fixed</div><div class="s">proof passes 3/3</div></div>
+    <div class="tile "><div class="v">0</div><div class="k">Unfixed</div><div class="s">needs a human</div></div>
+    <div class="tile"><div class="v">100%</div><div class="k">Precision</div><div class="s">reported findings with proof</div></div>
+    <div class="tile"><div class="v">20%</div><div class="k">Suspicions confirmed</div><div class="s">4 of 20</div></div>
+  </div>
+  <p class="meta" style="margin-top:12px">Full suite on <code>pr-2-discounts@5d34019</code> after fixes:
+    <span class="green">33 passed, 1 warning in 0.08s</span></p>
+
+  <h2>Time per stage</h2>
+  <div class="panel">
+    <div class="stagebar">
+<span style="width: 15.824915824915825%" title="intent"></span><span style="width: 78.45117845117845%" title="attack"></span><span style="width: 3.367003367003367%" title="verify"></span><span style="width: 1.0101010101010102%" title="fix"></span><span style="width: 1.3468013468013469%" title="verify_after_fix"></span>    </div>
+    <table>
+      <tr><th>Stage</th><th>Seconds</th><th>By</th></tr>
+      <tr><td><span class="dot" style="background: #748ffc"></span>intent</td>
+        <td class="num">47</td><td>bob</td></tr>
+      <tr><td><span class="dot" style="background: #f59f00"></span>attack <span class="pill">parallel</span></td>
+        <td class="num">233</td><td>bob-subagents</td></tr>
+      <tr><td><span class="dot" style="background: #40c057"></span>verify</td>
+        <td class="num">10</td><td>crucible-cli</td></tr>
+      <tr><td><span class="dot" style="background: #e64980"></span>fix</td>
+        <td class="num">3</td><td>claude-code</td></tr>
+      <tr><td><span class="dot" style="background: #15aabf"></span>verify_after_fix</td>
+        <td class="num">4</td><td>crucible-cli</td></tr>
+      <tr><td><b>total</b></td><td class="num"><b>297</b></td><td></td></tr>
+    </table>
+  </div>
+
+  <h2>Proven findings</h2>
+  <article class="card">
+    <div class="card-head">
+      <span class="id">F-011</span>
+      <span class="pill">state</span>
+      <span class="status">
+        <span class="red">RED 3/3</span> →
+<span class="green">GREEN 3/3</span>      </span>
+    </div>
+    <p class="claim">Applying a discount to an order that already has a discount must not compound the reduction a second time.</p>
+    <blockquote><span class="rule">no_double_effect</span>Repeating a request never applies its effect twice.</blockquote>
+    <p class="meta">
+      Fix commit: <code>031c523</code>      · Blame: new_code
+    </p>
+    <details open>
+      <summary>Proof test · <code>runs/pr-2-discounts/tests/test_state_1.py</code></summary>
+      <pre><code>&#34;&#34;&#34;Applying a discount to the same order twice must not apply the effect twice.&#34;&#34;&#34;
+from __future__ import annotations
+
+
+def test_discount_cannot_be_applied_twice(alice_client):
+    resp = alice_client.post(&#34;/orders&#34;, json={&#34;items&#34;: [{&#34;product_id&#34;: &#34;p1&#34;, &#34;qty&#34;: 4}]})
+    assert resp.status_code == 201
+    oid = resp.json()[&#34;id&#34;]
+    original_total = resp.json()[&#34;total_paise&#34;]
+
+    # First discount: 10% off
+    r1 = alice_client.post(f&#34;/orders/{oid}/discount&#34;, json={&#34;percent&#34;: 10})
+    assert r1.status_code == 200
+    after_first = r1.json()[&#34;total_paise&#34;]
+    expected_after_first = original_total - (original_total * 10 // 100)
+    assert after_first == expected_after_first
+
+    # Second discount: must be rejected (or be a no-op) — must not compound
+    r2 = alice_client.post(f&#34;/orders/{oid}/discount&#34;, json={&#34;percent&#34;: 10})
+    # Either the second call is rejected or the total remains the same as after the first
+    assert r2.status_code != 200 or r2.json()[&#34;total_paise&#34;] == after_first</code></pre>
+    </details>
+    <p class="label">Fix diff</p>
+    <pre class="diff"><div class="d-meta">diff --git a/demo-app/app/main.py b/demo-app/app/main.py</div><div class="d-meta">index bdaa29b..895968b 100644</div><div class="d-meta">--- a/demo-app/app/main.py</div><div class="d-meta">+++ b/demo-app/app/main.py</div><div class="d-hunk">@@ -135,8 +135,11 @@ def apply_discount(</div><div class="d-ctx">             detail=&#34;Discount percent must be between 1 and 50 inclusive&#34;,</div><div class="d-ctx">         )</div><div class="d-ctx"> </div><div class="d-del">-    discount_amount = (order.total_paise * body.percent) // 100</div><div class="d-del">-    new_total = max(0, order.total_paise - discount_amount)</div><div class="d-add">+    original_total = sum(</div><div class="d-add">+        store.products[item.product_id].price_paise * item.qty for item in order.items</div><div class="d-add">+    )</div><div class="d-add">+    discount_amount = (original_total * body.percent) // 100</div><div class="d-add">+    new_total = max(0, original_total - discount_amount)</div><div class="d-ctx"> </div><div class="d-ctx">     updated = order.model_copy(update={</div><div class="d-ctx">         &#34;total_paise&#34;: new_total,</div></pre>
+  </article>
+  <article class="card">
+    <div class="card-head">
+      <span class="id">F-012</span>
+      <span class="pill">state</span>
+      <span class="status">
+        <span class="red">RED 3/3</span> →
+<span class="green">GREEN 3/3</span>      </span>
+    </div>
+    <p class="claim">Attempting to apply a discount to a delivered order must return 400.</p>
+    <blockquote><span class="rule">R21</span>A discount code gives a percentage off the order total, between 1 and 50 inclusive.</blockquote>
+    <p class="meta">
+      Fix commit: <code>ce337cb</code>      · Blame: new_code
+    </p>
+    <details open>
+      <summary>Proof test · <code>runs/pr-2-discounts/tests/test_state_2.py</code></summary>
+      <pre><code>&#34;&#34;&#34;Applying a discount to a delivered order must be rejected with 400.&#34;&#34;&#34;
+from __future__ import annotations
+
+
+def test_discount_on_delivered_order_returns_400(alice_client):
+    resp = alice_client.post(&#34;/orders&#34;, json={&#34;items&#34;: [{&#34;product_id&#34;: &#34;p1&#34;, &#34;qty&#34;: 1}]})
+    assert resp.status_code == 201
+    oid = resp.json()[&#34;id&#34;]
+
+    # Deliver the order
+    r_deliver = alice_client.post(f&#34;/orders/{oid}/deliver&#34;)
+    assert r_deliver.status_code == 200
+    assert r_deliver.json()[&#34;status&#34;] == &#34;delivered&#34;
+
+    # Attempting to discount a delivered order must be rejected
+    r_discount = alice_client.post(f&#34;/orders/{oid}/discount&#34;, json={&#34;percent&#34;: 10})
+    assert r_discount.status_code == 400</code></pre>
+    </details>
+    <p class="label">Fix diff</p>
+    <pre class="diff"><div class="d-meta">diff --git a/demo-app/app/main.py b/demo-app/app/main.py</div><div class="d-meta">index 895968b..d3c2702 100644</div><div class="d-meta">--- a/demo-app/app/main.py</div><div class="d-meta">+++ b/demo-app/app/main.py</div><div class="d-hunk">@@ -129,6 +129,12 @@ def apply_discount(</div><div class="d-ctx">     user_id = _require_user(x_user_id)</div><div class="d-ctx">     order = _require_own_order(order_id, user_id)</div><div class="d-ctx"> </div><div class="d-add">+    if order.status != OrderStatus.placed:</div><div class="d-add">+        raise HTTPException(</div><div class="d-add">+            status_code=400,</div><div class="d-add">+            detail=f&#34;Cannot discount an order with status {order.status!r}&#34;,</div><div class="d-add">+        )</div><div class="d-add">+</div><div class="d-ctx">     if body.percent &lt; 1 or body.percent &gt; 50:</div><div class="d-ctx">         raise HTTPException(</div><div class="d-ctx">             status_code=400,</div></pre>
+  </article>
+  <article class="card">
+    <div class="card-head">
+      <span class="id">F-013</span>
+      <span class="pill">state</span>
+      <span class="status">
+        <span class="red">RED 3/3</span> →
+<span class="green">GREEN 3/3</span>      </span>
+    </div>
+    <p class="claim">Attempting to apply a discount to a cancelled order must return 400.</p>
+    <blockquote><span class="rule">R21</span>A discount code gives a percentage off the order total, between 1 and 50 inclusive.</blockquote>
+    <p class="meta">
+      Fix commit: <code>ce337cb</code> — same root cause as F-012, fixed by the same commit      · Blame: new_code
+    </p>
+    <details open>
+      <summary>Proof test · <code>runs/pr-2-discounts/tests/test_state_3.py</code></summary>
+      <pre><code>&#34;&#34;&#34;Applying a discount to a cancelled order must be rejected with 400.&#34;&#34;&#34;
+from __future__ import annotations
+
+
+def test_discount_on_cancelled_order_returns_400(alice_client):
+    resp = alice_client.post(&#34;/orders&#34;, json={&#34;items&#34;: [{&#34;product_id&#34;: &#34;p1&#34;, &#34;qty&#34;: 1}]})
+    assert resp.status_code == 201
+    oid = resp.json()[&#34;id&#34;]
+
+    # Cancel the order
+    r_cancel = alice_client.post(f&#34;/orders/{oid}/cancel&#34;)
+    assert r_cancel.status_code == 200
+    assert r_cancel.json()[&#34;status&#34;] == &#34;cancelled&#34;
+
+    # Attempting to discount a cancelled order must be rejected
+    r_discount = alice_client.post(f&#34;/orders/{oid}/discount&#34;, json={&#34;percent&#34;: 10})
+    assert r_discount.status_code == 400</code></pre>
+    </details>
+  </article>
+  <article class="card">
+    <div class="card-head">
+      <span class="id">F-014</span>
+      <span class="pill">state</span>
+      <span class="status">
+        <span class="red">RED 3/3</span> →
+<span class="green">GREEN 3/3</span>      </span>
+    </div>
+    <p class="claim">The discount_percent recorded on the order must reflect the actual percentage reduction applied to the original order total.</p>
+    <blockquote><span class="rule">R21</span>A discount code gives a percentage off the order total, between 1 and 50 inclusive.</blockquote>
+    <p class="meta">
+      Fix commit: <code>031c523</code> — same root cause as F-011, fixed by the same commit      · Blame: new_code
+    </p>
+    <details open>
+      <summary>Proof test · <code>runs/pr-2-discounts/tests/test_state_4.py</code></summary>
+      <pre><code>&#34;&#34;&#34;After a discount, the recorded discount_percent must match the actual reduction applied to the original total.&#34;&#34;&#34;
+from __future__ import annotations
+
+import app.store as store
+
+
+def test_discount_percent_matches_actual_total_reduction(alice_client):
+    resp = alice_client.post(&#34;/orders&#34;, json={&#34;items&#34;: [{&#34;product_id&#34;: &#34;p1&#34;, &#34;qty&#34;: 10}]})
+    assert resp.status_code == 201
+    oid = resp.json()[&#34;id&#34;]
+    original_total = resp.json()[&#34;total_paise&#34;]
+
+    r1 = alice_client.post(f&#34;/orders/{oid}/discount&#34;, json={&#34;percent&#34;: 20})
+    assert r1.status_code == 200
+    after_first = r1.json()[&#34;total_paise&#34;]
+
+    # Apply a second discount
+    r2 = alice_client.post(f&#34;/orders/{oid}/discount&#34;, json={&#34;percent&#34;: 10})
+    assert r2.status_code == 200
+    final_total = r2.json()[&#34;final_total&#34;] if &#34;final_total&#34; in r2.json() else r2.json()[&#34;total_paise&#34;]
+    recorded_percent = r2.json()[&#34;discount_percent&#34;]
+
+    # The recorded discount_percent (10) must reflect that the total after both
+    # discounts equals original minus (recorded_percent % of original).
+    # If the implementation compounds discounts and only stores the latest percent,
+    # the recorded percent is inconsistent with the actual total reduction.
+    expected_from_recorded = original_total - (original_total * recorded_percent // 100)
+    # The actual total must equal what the recorded percent implies from the original
+    assert final_total == expected_from_recorded</code></pre>
+    </details>
+  </article>
+
+  <h2>Noise rejected</h2>
+  <div class="panel">
+    <details>
+      <summary>Show 16 rejected findings</summary>
+      <div class="noise-group">does not fail on PR <span>(16)</span></div>
+      <ul class="noise">
+<li><b>F-001</b> · edge · <code>spec/orders.md#R24</code> — A discount percent of 0 is outside the valid range 1-50 and must return 400.</li><li><b>F-002</b> · edge · <code>spec/orders.md#R24</code> — A discount percent of 51 is outside the valid range 1-50 and must return 400.</li><li><b>F-003</b> · edge · <code>spec/orders.md#R24</code> — A negative discount percent is outside the valid range 1-50 and must return 400.</li><li><b>F-004</b> · edge · <code>spec/orders.md#R22</code> — A discount can only be applied by the owner of the order; any other caller must receive 403.</li><li><b>F-005</b> · edge · <code>spec/orders.md#R24</code> — A discount percent far above 50 is outside the valid range and must return 400.</li><li><b>F-006</b> · security · <code>spec/orders.md#R22</code> — A discount can only be applied by the owner of the order; any other user must receive 403.</li><li><b>F-007</b> · security · <code>no_5xx</code> — Calling POST /orders/{id}/discount without the X-User-Id header must return 422, not 500.</li><li><b>F-008</b> · security · <code>spec/orders.md#R7</code> — Calling POST /orders/{id}/discount with an unknown X-User-Id must return 401.</li><li><b>F-009</b> · security · <code>no_data_leak</code> — A 403 response from POST /orders/{id}/discount must not expose the order total or other user data.</li><li><b>F-010</b> · security · <code>no_5xx</code> — POST /orders/{id}/discount with a null-byte or special-character X-User-Id must not return 500.</li><li><b>F-015</b> · state · <code>spec/orders.md#R21</code> — Applying a discount to one order must leave every other order&#39;s total and discount_percent completely unchanged.</li><li><b>F-016</b> · spec · <code>spec/orders.md#R24</code> — A discount percentage of 0 is outside the range 1–50 and must return 400.</li><li><b>F-017</b> · spec · <code>spec/orders.md#R24</code> — A discount percentage of 51 is outside the range 1–50 and must return 400.</li><li><b>F-018</b> · spec · <code>spec/orders.md#R22</code> — A discount can only be applied by the owner of the order; any other caller must receive 403.</li><li><b>F-019</b> · spec · <code>spec/orders.md#R21</code> — A discount percentage of 1 is the minimum valid value and must be accepted with a 200 response.</li><li><b>F-020</b> · spec · <code>spec/orders.md#R23</code> — The order total after a discount can never go below 0.</li>      </ul>
+    </details>
+  </div>
+
+  <footer>Generated by <code>crucible report</code> from verdicts.json, timing.json and fix_check.json. Every number on this page comes from those files.</footer>
+</main>
+</body>
+</html>
