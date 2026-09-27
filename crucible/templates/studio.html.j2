@@ -196,10 +196,14 @@ let upload = null;
 
 function setMsg(el, text, kind) { el.textContent = text; el.className = "msg " + (kind || ""); }
 
+const OFFLINE = "Can't reach the Crucible server. It may have stopped or be waking up; reload this page in a moment.";
+
 async function send(url, options) {
-  const r = await fetch(url, options);
+  let r;
+  try { r = await fetch(url, options); }
+  catch (e) { const err = new Error(OFFLINE); err.offline = true; throw err; }
   const body = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(body.detail || r.statusText);
+  if (!r.ok) throw new Error(body.detail || `Server error ${r.status}${r.status === 404 ? ": reload this page" : ""}`);
   return body;
 }
 
@@ -277,12 +281,19 @@ $("run").onclick = async () => {
   try {
     const { job_id } = await send("/api/jobs", { method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ upload_id: upload.upload_id, base: $("base").value, pr: $("pr").value, run_dir: $("runDir").value, layout }) });
+    let misses = 0;
     const poll = async () => {
-      const j = await send(`/api/jobs/${job_id}`);
+      let j;
+      try { j = await send(`/api/jobs/${job_id}`); misses = 0; }
+      catch (e) {
+        // Ride out short network blips while the job runs; give up after ~20s
+        if (e.offline && ++misses < 10) { setMsg($("runMsg"), "Connection lost, retrying…"); setTimeout(poll, 2000); return; }
+        setMsg($("runMsg"), e.message, "err"); $("run").disabled = false; return;
+      }
       $("log").textContent = j.log; $("log").scrollTop = $("log").scrollHeight;
       if (j.status === "done") { setMsg($("runMsg"), "Done.", "ok"); renderResults(j.result, j.report_url); $("run").disabled = false; }
       else if (j.status === "failed") { setMsg($("runMsg"), j.error, "err"); $("run").disabled = false; }
-      else setTimeout(poll, 1000);
+      else { setMsg($("runMsg"), "Running proof gates: each test runs on the PR (3×) and on the base branch…"); setTimeout(poll, 1000); }
     };
     poll();
   } catch (e) { setMsg($("runMsg"), e.message, "err"); $("run").disabled = false; }
