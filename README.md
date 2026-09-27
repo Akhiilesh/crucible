@@ -155,8 +155,15 @@ python3 -m venv .venv && .venv/bin/pip install -e .      # Python 3.11+
 2. **Choose** the base branch, the PR branch and IBM Bob's attacker output (`runs/<pr>/findings/`).
 3. **Run proof gates.** Crucible runs every test through G1–G4 and shows the proven findings, the rejected noise, a live log and the full report.
 
-Try it on this repo: load it by path, then choose `main`, `pr-2-discounts-original` and `runs/pr-2-discounts`.
-You should get 4 proven and 16 rejected.
+Try it with [`examples/orders-service-demo.zip`](examples/orders-service-demo.zip). It is a standalone git
+repo containing the sample service, its three PR branches as submitted, and IBM Bob's attacker output. Choose base
+`main` and a PR:
+
+| PR branch | Attacker output | Expected result |
+|---|---|---|
+| `pr-1-refunds` | `runs/pr-1-refunds` | 20 suspicions → 2 proven, 18 rejected |
+| `pr-2-discounts` | `runs/pr-2-discounts` | 20 → 4 proven, 16 rejected |
+| `pr-3-bulk-cancel` | `runs/pr-3-bulk-cancel` | 20 → 10 proven, 10 rejected |
 
 This mode is verify-only. The attack tests come from IBM Bob following `.bob/playbook/`, and the web app
 never calls an AI. It runs the repo's tests on your machine and only listens on 127.0.0.1. A project
