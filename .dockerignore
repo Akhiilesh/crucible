@@ -1,0 +1,10 @@
+.git
+.venv
+venv
+.crucible-work
+**/__pycache__
+**/.pytest_cache
+runs/*/worktrees
+runs/*/junit
+bob-sessions
+.claude

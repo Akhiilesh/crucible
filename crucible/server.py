@@ -14,6 +14,7 @@ from __future__ import annotations
 import contextlib
 import io
 import json
+import os
 import shutil
 import subprocess
 import threading
@@ -35,7 +36,10 @@ from crucible.verify import run_verification
 
 ROOT = Path(__file__).resolve().parent.parent
 WORK = ROOT / ".crucible-work"
-MAX_UPLOAD_BYTES = 200 * 1024 * 1024
+SAMPLE_ZIP = ROOT / "examples" / "orders-service-demo.zip"
+# Hosted mode (public server): no reading paths on the server, smaller uploads
+HOSTED = os.environ.get("CRUCIBLE_HOSTED") == "1"
+MAX_UPLOAD_BYTES = (50 if HOSTED else 200) * 1024 * 1024
 _SKIP_DIRS = {".venv", "venv", "node_modules", ".crucible-work", "__pycache__", ".pytest_cache",
               "worktrees", "junit"}
 
@@ -103,28 +107,36 @@ def _new_upload(name: str) -> tuple[str, Path]:
     return upload_id, dest
 
 
+def _from_zip(data: bytes, name: str) -> dict:
+    if len(data) > MAX_UPLOAD_BYTES:
+        raise HTTPException(413, f"Upload is larger than {MAX_UPLOAD_BYTES // 2**20} MB")
+    if not zipfile.is_zipfile(io.BytesIO(data)):
+        raise HTTPException(400, "That file is not a valid .zip archive")
+    upload_id, dest = _new_upload(name)
+    with zipfile.ZipFile(io.BytesIO(data)) as zf:
+        for member in zf.infolist():
+            target = dest / _safe_rel(member.filename)
+            if member.is_dir():
+                target.mkdir(parents=True, exist_ok=True)
+                continue
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(zf.read(member))
+    uploads[upload_id] = {"repo": _find_repo_root(dest), "name": name}
+    return _inspect(upload_id)
+
+
+@app.post("/api/sample")
+def sample() -> dict:
+    """Load the bundled demo repo (three PRs + IBM Bob's attacker output)."""
+    return _from_zip(SAMPLE_ZIP.read_bytes(), SAMPLE_ZIP.name)
+
+
 @app.post("/api/upload")
 async def upload(files: list[UploadFile] = File(...), paths: list[str] = Form(default=[])) -> dict:
     """Accept either one .zip of a repo, or a folder (files + their relative paths)."""
     total = 0
     if len(files) == 1 and (files[0].filename or "").lower().endswith(".zip"):
-        upload_id, dest = _new_upload(files[0].filename)
-        data = await files[0].read()
-        if len(data) > MAX_UPLOAD_BYTES:
-            raise HTTPException(413, "Upload is larger than 200 MB")
-        if not zipfile.is_zipfile(io.BytesIO(data)):
-            shutil.rmtree(dest, ignore_errors=True)
-            raise HTTPException(400, "That file is not a valid .zip archive")
-        with zipfile.ZipFile(io.BytesIO(data)) as zf:
-            for member in zf.infolist():
-                rel = _safe_rel(member.filename)
-                target = dest / rel
-                if member.is_dir():
-                    target.mkdir(parents=True, exist_ok=True)
-                    continue
-                target.parent.mkdir(parents=True, exist_ok=True)
-                target.write_bytes(zf.read(member))
-        name = files[0].filename
+        return _from_zip(await files[0].read(), files[0].filename)
     else:
         if len(paths) != len(files):
             raise HTTPException(400, "Folder upload needs one relative path per file")
@@ -133,7 +145,7 @@ async def upload(files: list[UploadFile] = File(...), paths: list[str] = Form(de
             data = await f.read()
             total += len(data)
             if total > MAX_UPLOAD_BYTES:
-                raise HTTPException(413, "Upload is larger than 200 MB")
+                raise HTTPException(413, f"Upload is larger than {MAX_UPLOAD_BYTES // 2**20} MB")
             target = dest / _safe_rel(p)
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(data)
@@ -149,6 +161,8 @@ class LocalRepo(BaseModel):
 @app.post("/api/local")
 def local_repo(body: LocalRepo) -> dict:
     """Copy a repo that is already on this machine (the original is never modified)."""
+    if HOSTED:
+        raise HTTPException(403, "Loading a path is only available when Crucible runs locally")
     src = Path(body.path).expanduser().resolve()
     if not (src / ".git").exists():
         raise HTTPException(400, f"{src} is not a git repository (no .git folder)")
@@ -262,11 +276,13 @@ def job_report(job_id: str) -> FileResponse:
 def home() -> str:
     summary_path = ROOT / "runs" / "summary.json"
     totals = json.loads(summary_path.read_text())["totals"] if summary_path.exists() else None
-    return _env.get_template("studio.html.j2").render(totals=totals)
+    return _env.get_template("studio.html.j2").render(totals=totals, hosted=HOSTED)
 
 
 if (ROOT / "dashboard").exists():
     app.mount("/dashboard", StaticFiles(directory=ROOT / "dashboard", html=True), name="dashboard")
+if (ROOT / "examples").exists():
+    app.mount("/examples", StaticFiles(directory=ROOT / "examples"), name="examples")
 if (ROOT / "runs").exists():
     app.mount("/runs", StaticFiles(directory=ROOT / "runs", html=True), name="runs")
 
@@ -274,4 +290,6 @@ if (ROOT / "runs").exists():
 def serve(port: int = 8765) -> None:
     import uvicorn
     WORK.mkdir(exist_ok=True)
-    uvicorn.run(app, host="127.0.0.1", port=port)
+    # Locally: 127.0.0.1 only. In the container: HOST=0.0.0.0 and the platform's PORT.
+    host = os.environ.get("HOST", "127.0.0.1")
+    uvicorn.run(app, host=host, port=int(os.environ.get("PORT", port)))

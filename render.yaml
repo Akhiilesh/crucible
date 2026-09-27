@@ -1,0 +1,7 @@
+# Render Blueprint: New > Blueprint > pick this repo. Free web service built from the Dockerfile.
+services:
+  - type: web
+    name: crucible
+    runtime: docker
+    plan: free
+    healthCheckPath: /

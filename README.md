@@ -170,16 +170,15 @@ never calls an AI. It runs the repo's tests on your machine and only listens on 
 that is not laid out like `demo-app/` can describe its layout in a `crucible.toml`
 (see `crucible/layout.py`).
 
-### Static showcase site (Vercel)
+### Deploy the web app (Render, free)
 
-`site/` is a read-only build of the landing page, the dashboard, the three PR reports and the demo zip:
+The repo includes a `Dockerfile` and a Render Blueprint (`render.yaml`). On Render, choose **New → Blueprint**, pick this
+GitHub repo and click **Apply**. You get a public URL where anyone can click **Try the sample repo** or upload a zip.
+In the container, Crucible runs in hosted mode: it cannot load paths from the server, and uploads are capped at 50 MB.
 
 ```bash
-.venv/bin/python scripts/build_site.py --repo-url https://github.com/<user>/crucible
-vercel --prod        # vercel.json serves site/ as static files; .vercelignore uploads only site/
+docker build -t crucible . && docker run -p 8765:8765 crucible     # same container, locally
 ```
-
-The upload web app is not deployed publicly, because it runs the uploaded repository's tests. Run it locally with `crucible serve`.
 
 ## 8. Limitations
 

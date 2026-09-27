@@ -1,4 +1,0 @@
-# Deploy only the prebuilt static site (scripts/build_site.py) and its config.
-/*
-!/site
-!/vercel.json
