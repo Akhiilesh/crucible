@@ -12,6 +12,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
+from crucible.layout import DEFAULT_LAYOUT, Layout, load_layout
 from crucible.verify import _git
 
 UNIVERSAL_PROPERTY_TEXT = {
@@ -33,24 +34,27 @@ def _load_json(path: Path, default):
     return json.loads(path.read_text()) if path.exists() else default
 
 
-def _spec_rules(repo_root: Path, base: str) -> dict[str, str]:
-    """Map rule id → rule text from the base branch's spec."""
-    spec = _git("show", f"{base}:demo-app/spec/orders.md", cwd=repo_root)
+def _spec_rules(repo_root: Path, base: str, layout: Layout = DEFAULT_LAYOUT) -> dict[str, str]:
+    """Map rule id → rule text from the base branch's spec (empty if there is none)."""
+    try:
+        spec = _git("show", f"{base}:{layout.spec_file}", cwd=repo_root)
+    except RuntimeError:
+        return {}
     return dict(re.findall(r"^(R\d+):\s*(.+)$", spec, re.MULTILINE))
 
 
 def _basis_text(basis: str, rules: dict[str, str]) -> tuple[str, str]:
     """Return (label, quoted text) for a finding's basis."""
-    m = re.fullmatch(r"spec/orders\.md#(R\d+)", basis)
+    m = re.fullmatch(r".+\.md#(R\d+)", basis)
     if m:
         return m.group(1), rules.get(m.group(1), "")
     return basis, UNIVERSAL_PROPERTY_TEXT.get(basis, "")
 
 
-def _fix_diff(sha: str | None, repo_root: Path) -> str:
+def _fix_diff(sha: str | None, repo_root: Path, layout: Layout = DEFAULT_LAYOUT) -> str:
     if not sha:
         return ""
-    return _git("show", "--format=", sha, "--", "demo-app/app", cwd=repo_root)
+    return _git("show", "--format=", sha, "--", layout.app_dir, cwd=repo_root)
 
 
 def _diff_lines(diff: str) -> list[tuple[str, str]]:
@@ -74,11 +78,13 @@ def _pct(num: int, den: int) -> str:
     return f"{round(100 * num / den)}%" if den else "n/a"
 
 
-def build_context(run_dir: Path, repo_root: Path, base: str = "main") -> dict:
+def build_context(run_dir: Path, repo_root: Path, base: str = "main",
+                  layout: Layout | None = None) -> dict:
+    layout = layout or load_layout(repo_root)
     verdicts: list[dict] = _load_json(run_dir / "verdicts.json", [])
     timing: dict = _load_json(run_dir / "timing.json", {})
     fix_check: dict | None = _load_json(run_dir / "fix_check.json", None)
-    rules = _spec_rules(repo_root, base)
+    rules = _spec_rules(repo_root, base, layout)
 
     proven = [v for v in verdicts if v["verdict"] in ("PROVEN", "UNFIXED")]
     rejected = [v for v in verdicts if v["verdict"] == "REJECTED"]
@@ -101,7 +107,7 @@ def build_context(run_dir: Path, repo_root: Path, base: str = "main") -> dict:
             "basis_label": label,
             "basis_text": text,
             "test_code": test_file.read_text() if test_file.exists() else "",
-            "diff_lines": [] if same_as else _diff_lines(_fix_diff(sha, repo_root)),
+            "diff_lines": [] if same_as else _diff_lines(_fix_diff(sha, repo_root, layout)),
             "same_fix_as": same_as,
             "red": v["gate_results"].get("repro"),
             "green": af["runs"] if af else None,
@@ -160,10 +166,11 @@ def render(context: dict) -> tuple[str, str]:
     return md, html
 
 
-def build_report(run_dir: Path, repo_root: Path, base: str = "main") -> tuple[Path, Path]:
+def build_report(run_dir: Path, repo_root: Path, base: str = "main",
+                 layout: Layout | None = None) -> tuple[Path, Path]:
     if not run_dir.is_absolute():
         run_dir = repo_root / run_dir
-    md, html = render(build_context(run_dir, repo_root, base))
+    md, html = render(build_context(run_dir, repo_root, base, layout))
     md_path, html_path = run_dir / "report.md", run_dir / "report.html"
     md_path.write_text(md)
     html_path.write_text(html)

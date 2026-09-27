@@ -13,6 +13,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+from crucible.layout import DEFAULT_LAYOUT, Layout
 from crucible.gates import (
     after_fix_status,
     gate_g1_fails_on_pr,
@@ -98,14 +99,14 @@ def teardown_worktrees(run_dir: Path, repo_root: Path) -> None:
 
 # ── Pytest runner ─────────────────────────────────────────────────────────────
 
-def copy_test_to_worktree(test_path: Path, worktree: Path) -> Path:
+def copy_test_to_worktree(test_path: Path, worktree: Path, layout: Layout = DEFAULT_LAYOUT) -> Path:
     """Copy a proof test into <worktree>/demo-app/tests/crucible/.
 
     Creates tests/crucible/__init__.py if absent so pytest's rootdir
     insertion doesn't break `import app` or conftest fixtures.
     Returns the destination path.
     """
-    dest_dir = worktree / "demo-app" / "tests" / "crucible"
+    dest_dir = worktree / layout.tests_dir / "crucible"
     dest_dir.mkdir(parents=True, exist_ok=True)
 
     init_file = dest_dir / "__init__.py"
@@ -122,6 +123,7 @@ def run_pytest_once(
     worktree: Path,
     junit_out: Path,
     timeout: int = 60,
+    layout: Layout = DEFAULT_LAYOUT,
 ) -> str:
     """Run a single proof-test file and return the outcome string.
 
@@ -138,7 +140,7 @@ def run_pytest_once(
 
     cmd = [
         sys.executable, "-m", "pytest",
-        f"tests/crucible/{test_file}",
+        f"{layout.tests_in_project}/crucible/{test_file}",
         f"--junitxml={junit_out}",
         "-q",
         "-p", "no:cacheprovider",
@@ -147,7 +149,7 @@ def run_pytest_once(
     try:
         subprocess.run(
             cmd,
-            cwd=worktree / "demo-app",
+            cwd=worktree / layout.project_dir,
             timeout=timeout,
             capture_output=True,
         )
@@ -187,6 +189,7 @@ def verify_finding(
     run_dir: Path,
     repo_root: Path,
     intent_rule_ids: set[str] | None = None,
+    layout: Layout = DEFAULT_LAYOUT,
 ) -> dict:
     """Apply G4 → G1 → G3 → G2 gates to a single finding.
 
@@ -216,20 +219,20 @@ def verify_finding(
     }
 
     # ── G4 Grounded (static, always first) ──────────────────────────────────
-    g4_pass, g4_detail = gate_g4_grounded(basis, spec_text, intent_rule_ids)
+    g4_pass, g4_detail = gate_g4_grounded(basis, spec_text, intent_rule_ids, layout.spec_ref)
     gate_results["grounded"] = g4_pass
     if not g4_pass:
         return {**finding, "gate_results": gate_results,
                 "verdict": "REJECTED", "reason": "ungrounded", "fix_commit": None}
 
     # Copy test into both worktrees
-    copy_test_to_worktree(test_path, pr_worktree)
-    copy_test_to_worktree(test_path, base_worktree)
+    copy_test_to_worktree(test_path, pr_worktree, layout)
+    copy_test_to_worktree(test_path, base_worktree, layout)
     test_filename = test_path.name
 
     # ── G1 Fails on PR (run 1 of 3) ─────────────────────────────────────────
     junit_pr1 = junit_dir / f"{fid}-pr1.xml"
-    outcome_pr1 = run_pytest_once(test_filename, pr_worktree, junit_pr1)
+    outcome_pr1 = run_pytest_once(test_filename, pr_worktree, junit_pr1, layout=layout)
 
     g1_pass, g1_detail = gate_g1_fails_on_pr(outcome_pr1)
     gate_results["fails_on_pr"] = g1_pass
@@ -240,8 +243,8 @@ def verify_finding(
     # ── G3 Reproducible (runs 2 and 3) ──────────────────────────────────────
     junit_pr2 = junit_dir / f"{fid}-pr2.xml"
     junit_pr3 = junit_dir / f"{fid}-pr3.xml"
-    outcome_pr2 = run_pytest_once(test_filename, pr_worktree, junit_pr2)
-    outcome_pr3 = run_pytest_once(test_filename, pr_worktree, junit_pr3)
+    outcome_pr2 = run_pytest_once(test_filename, pr_worktree, junit_pr2, layout=layout)
+    outcome_pr3 = run_pytest_once(test_filename, pr_worktree, junit_pr3, layout=layout)
 
     all_outcomes = [outcome_pr1, outcome_pr2, outcome_pr3]
     g3_pass, repro = gate_g3_reproducible(all_outcomes)
@@ -252,7 +255,7 @@ def verify_finding(
 
     # ── G2 Blame (one base run) ───────────────────────────────────────────────
     junit_base = junit_dir / f"{fid}-base.xml"
-    base_outcome = run_pytest_once(test_filename, base_worktree, junit_base)
+    base_outcome = run_pytest_once(test_filename, base_worktree, junit_base, layout=layout)
 
     g2_pass, blame = gate_g2_blame(base_outcome, diff_text, test_source)
     gate_results["blame"] = blame
@@ -278,6 +281,7 @@ def run_verification(
     run_dir: Path,
     repo_root: Path,
     keep: bool = False,
+    layout: Layout | None = None,
 ) -> None:
     """Run the full verification pipeline for one PR.
 
@@ -293,6 +297,9 @@ def run_verification(
     # Resolve run_dir relative to repo_root if needed
     if not run_dir.is_absolute():
         run_dir = repo_root / run_dir
+    if layout is None:
+        from crucible.layout import load_layout
+        layout = load_layout(repo_root)
 
     findings_path = run_dir / "findings.json"
     if not findings_path.exists():
@@ -317,12 +324,12 @@ def run_verification(
         )
 
         # Read spec from base worktree so G4 uses the same spec the base branch has
-        spec_path = base_worktree / "demo-app" / "spec" / "orders.md"
+        spec_path = base_worktree / layout.spec_file
         spec_text = spec_path.read_text() if spec_path.exists() else ""
 
         # One diff per PR — app code only, so test helpers don't count as "new code"
         diff_text = _git(
-            "diff", f"{base_branch}...{pr_branch}", "--", "demo-app/app",
+            "diff", f"{base_branch}...{pr_branch}", "--", layout.app_dir,
             cwd=repo_root,
         )
 
@@ -331,7 +338,7 @@ def run_verification(
             print(f"  verifying {finding['id']} ({finding.get('lens', '?')}) …")
             verdict = verify_finding(
                 finding, pr_worktree, base_worktree,
-                diff_text, spec_text, run_dir, repo_root, intent_rule_ids,
+                diff_text, spec_text, run_dir, repo_root, intent_rule_ids, layout,
             )
             verdicts.append(verdict)
 
@@ -384,6 +391,7 @@ def run_after_fix_check(
     run_dir: Path,
     repo_root: Path,
     keep: bool = False,
+    layout: Layout | None = None,
 ) -> None:
     """Re-run every PROVEN/UNFIXED proof test on the fixed PR branch.
 
@@ -393,6 +401,9 @@ def run_after_fix_check(
     """
     if not run_dir.is_absolute():
         run_dir = repo_root / run_dir
+    if layout is None:
+        from crucible.layout import load_layout
+        layout = load_layout(repo_root)
 
     verdicts_path = run_dir / "verdicts.json"
     verdicts: list[dict] = json.loads(verdicts_path.read_text())
@@ -407,7 +418,7 @@ def run_after_fix_check(
         # Full suite on the branch exactly as committed (before copying in any
         # UNFIXED proof tests, which are deliberately not committed)
         suite = subprocess.run(
-            [sys.executable, "-m", "pytest", "demo-app/tests", "-q", "-p", "no:cacheprovider"],
+            [sys.executable, "-m", "pytest", layout.tests_dir, "-q", "-p", "no:cacheprovider"],
             cwd=pr_worktree, capture_output=True, text=True, timeout=300,
         )
         lines = [ln for ln in suite.stdout.splitlines() if ln.strip()]
@@ -422,11 +433,12 @@ def run_after_fix_check(
             if v["verdict"] not in ("PROVEN", "UNFIXED"):
                 continue
             test_path = repo_root / v["test_path"]
-            copy_test_to_worktree(test_path, pr_worktree)
+            copy_test_to_worktree(test_path, pr_worktree, layout)
             outcomes = [
                 run_pytest_once(
                     test_path.name, pr_worktree,
                     run_dir / "junit" / f"{v['id']}-fixed{i}.xml",
+                    layout=layout,
                 )
                 for i in range(1, AFTER_FIX_RUNS + 1)
             ]

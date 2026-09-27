@@ -551,3 +551,31 @@ class TestSummary:
 
     def test_ignores_indented_and_empty(self):
         assert count_numbered_comments("   1. nested\n1.\n") == 0
+
+
+# ── Layout ────────────────────────────────────────────────────────────────────
+
+from crucible.layout import DEFAULT_LAYOUT, Layout, load_layout  # noqa: E402
+
+
+class TestLayout:
+    def test_default_is_demo_layout(self, tmp_path):
+        assert load_layout(tmp_path) == DEFAULT_LAYOUT
+        assert DEFAULT_LAYOUT.tests_in_project == "tests"
+        assert DEFAULT_LAYOUT.spec_ref == "spec/orders.md"
+
+    def test_reads_crucible_toml(self, tmp_path):
+        (tmp_path / "crucible.toml").write_text(
+            '[crucible]\nproject_dir = "."\napp_dir = "src"\ntests_dir = "tests"\nspec_file = "SPEC.md"\n')
+        layout = load_layout(tmp_path)
+        assert layout == Layout(project_dir=".", app_dir="src", tests_dir="tests", spec_file="SPEC.md")
+        assert layout.spec_ref == "SPEC.md"
+
+    def test_empty_overrides_are_ignored(self, tmp_path):
+        assert load_layout(tmp_path, {"app_dir": "", "spec_file": "x/rules.md"}).spec_file == "x/rules.md"
+        assert load_layout(tmp_path, {"app_dir": ""}).app_dir == DEFAULT_LAYOUT.app_dir
+
+    def test_g4_uses_configured_spec_ref(self):
+        spec = "R3: rule three.\n"
+        assert gate_g4_grounded("SPEC.md#R3", spec, None, "SPEC.md") == (True, "")
+        assert gate_g4_grounded("spec/orders.md#R3", spec, None, "SPEC.md") == (False, "ungrounded")

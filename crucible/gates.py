@@ -81,6 +81,7 @@ def gate_g4_grounded(
     basis: str,
     spec_text: str,
     intent_rule_ids: set[str] | None = None,
+    spec_ref: str = "spec/orders.md",
 ) -> tuple[bool, str]:
     """Static grounding check. Runs before any pytest subprocess.
 
@@ -94,7 +95,7 @@ def gate_g4_grounded(
     if basis in UNIVERSAL_PROPERTIES:
         return True, ""
 
-    m = re.fullmatch(r"spec/orders\.md#(R\d+)", basis)
+    m = re.fullmatch(rf"{re.escape(spec_ref)}#(R\d+)", basis)
     if m:
         rule_id = m.group(1)
         in_spec = re.search(rf"^{re.escape(rule_id)}:", spec_text, re.MULTILINE)
