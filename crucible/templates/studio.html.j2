@@ -168,6 +168,8 @@
         </div>
       </details>
       <div style="margin-top:14px"><button class="primary" id="run">Run proof gates</button></div>
+      {% if hosted %}<p class="note">This demo runs on a small free server: a run takes about 3–6 minutes (about 15 seconds on a laptop),
+        and runs queue one at a time. Keep this tab open; the live log shows each finding as it is checked.</p>{% endif %}
     </div>
 
     <div class="stage hidden" id="runStage">

@@ -1,5 +1,7 @@
 # Crucible
 
+**Live demo:** https://crucible-0kii.onrender.com (free server: the first visit can take about a minute to wake up, and a run takes 3–6 minutes)
+
 **A code reviewer that only reports a bug when a failing test proves it, then fixes it.**
 Built for the IBM Bob 2.0 Hackathon.
 
